@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>0x52686561 | 神圣殉道录 </title>
     <style>
-        /* 禁用 HTML 和 Body 的滚动 */
+        /* 彻底禁止 HTML 和 Body 滚动 */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden; /* 彻底禁止滚动条 */
+            overflow: hidden; 
         }
 
         body {
@@ -33,39 +33,64 @@
             height: 100vh;
         }
 
-        /* 🌟 星星样式（黑色闪烁） */
+        /* ✦ 四芒星形状（纯CSS绘制） */
         .star {
             position: absolute;
-            width: 15px;   
-            height: 15px;  
-            background: radial-gradient(circle, #222 30%, #555 70%, transparent 100%);
-            border-radius: 50%;
-            box-shadow: 0 0 6px rgba(0, 0, 0, 0.4); 
+            width: 24px;      /* 整体大小 */
+            height: 24px;
             cursor: pointer;
             transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        /* 制作四芒星的图形（两个正方形叠加旋转45度） */
+        .star::before,
+        .star::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #111; /* 深黑色四芒星 */
+            transition: all 0.3s ease;
+        }
+        
+        /* 外层旋转 */
+        .star::before {
+            transform: rotate(45deg);
+        }
+
+        /* 闪烁动画直接应用在图形上 */
+        .star {
             animation: twinkle 2.5s infinite ease-in-out alternate;
         }
        
         @keyframes twinkle {
-            0% { opacity: 0.5; transform: scale(0.9); box-shadow: 0 0 4px rgba(100,100,100,0.3); }
-            100% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 12px rgba(100,100,100,0.8); }
+            0% { opacity: 0.6; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1.1); }
         }
 
+        /* 鼠标悬停时的效果：四芒星变亮、变大，停止闪烁 */
         .star:hover {
-            transform: scale(1.6) !important;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
             animation: none; 
-            background: radial-gradient(circle, #000, #333); 
+            transform: scale(1.5) !important;
+            z-index: 20;
+        }
+        .star:hover::before,
+        .star:hover::after {
+            background: #000; /* 变成纯黑并稍微发光 */
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
         }
         
-        /* 星星悬停标签 */
+        /* 星星上面的文字标签 */
         .star-label {
             position: absolute;
-            top: 25px;    
+            top: 30px;    
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(50, 50, 50, 0.9); /* 深灰色半透明底 */
-            color: #eee; /* 浅灰色字 */
+            background: rgba(50, 50, 50, 0.9);
+            color: #eee;
             padding: 6px 16px;
             border: none;
             border-radius: 4px;
@@ -82,16 +107,16 @@
             opacity: 1;
         }
 
-        /* 弹窗样式 */
+        /* 弹窗 (Modal) 样式 */
         .modal-overlay {
-            display: none; /* 默认隐藏 */
+            display: none; 
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.4); /* 背景半透明遮罩 */
+            background: rgba(0, 0, 0, 0.4); 
             z-index: 1000;
             justify-content: center;
             align-items: center;
-            backdrop-filter: blur(2px); /* 背景稍微模糊一点，更有质感 */
+            backdrop-filter: blur(2px); 
         }
 
         .modal-box {
@@ -116,18 +141,23 @@
             transition: color 0.2s;
             font-weight: bold;
         }
-        .modal-close:hover {
-            color: #000;
-        }
+        .modal-close:hover { color: #000; }
 
-        .modal-box h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-        }
-        .modal-box p {
-            line-height: 1.8;
-            color: #444;
+        .modal-box h2 { margin-top: 0; margin-bottom: 20px; letter-spacing: 2px; }
+        .modal-box p { line-height: 1.8; color: #444; }
+
+        /* 绝对定位 + z-index 覆盖层 */
+        .bottom-inscription {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 15px 0;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            z-index: 5; /* 保证它在图片之上，但在星星之下 */
+            pointer-events: none; /* 让鼠标点击能穿透它直接点到星星 */
         }
     </style>
 </head>
@@ -153,8 +183,8 @@
         </div>
     </div>
 
-    <!-- 底部铭文区域 (锁定在屏幕底部) -->
-    <div style="position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.85); padding: 15px 0; border-top: 1px solid #ddd; text-align: center; z-index: 1;">
+    <!-- 底部铭文区域 (固定在屏幕底部，绝对不会消失) -->
+    <div class="bottom-inscription">
         <p style="font-size: 18px; letter-spacing: 3px; line-height: 1.6; color: #222; max-width: 700px; margin: 0 auto; font-weight: 300;">
             “帝皇的圣光指引着你，<br>翻阅此卷，见证殉道者的荣光。”
         </p>
@@ -169,54 +199,34 @@
     <div id="modalOverlay" class="modal-overlay" onclick="closeModalOutside(event)">
         <div class="modal-box">
             <span class="modal-close" onclick="closeModal()">✖</span>
-            
-            <!-- 动态替换的标题和内容 -->
             <h2 id="modalTitle">标题</h2>
             <p id="modalContent">内容</p>
         </div>
     </div>
 
     <script>
-        // 数据配置
         const modalData = {
-            'novel': {
-                title: '圣典与手稿',
-                content: '关于圣战与殉道者的史诗篇章，皆收录于此。'
-            },
-            'character': {
-                title: '殉道者名录',
-                content: '帝皇忠仆，帝国英魂。每一位登场者的生平与影像将铭刻于此。'
-            },
-            'faction': {
-                title: '帝国档案',
-                content: '每一个势力的崛起与陨落，都伴随着一场震彻星域的战争。'
-            },
-            'guestbook': {
-                title: '大祈祷室',
-                content: '在此向帝皇倾诉，或留下印记。'
-            }
+            'novel': { title: '圣典与手稿', content: '关于圣战与殉道者的史诗篇章，皆收录于此。' },
+            'character': { title: '殉道者名录', content: '帝皇忠仆，帝国英魂。每一位登场者的生平与影像将铭刻于此。' },
+            'faction': { title: '帝国档案', content: '每一个势力的崛起与陨落，都伴随着一场震彻星域的战争。' },
+            'guestbook': { title: '大祈祷室', content: '在此向帝皇倾诉，或留下印记。' }
         };
 
-        // 打开弹窗
         function openModal(id) {
             const data = modalData[id];
             if(data) {
                 document.getElementById('modalTitle').innerText = data.title;
                 document.getElementById('modalContent').innerText = data.content;
                 document.getElementById('modalOverlay').style.display = 'flex'; 
-                // 打开弹窗时，强制禁止后面的页面背景滚动
                 document.body.style.overflow = 'hidden'; 
             }
         }
 
-        // 关闭弹窗
         function closeModal() {
             document.getElementById('modalOverlay').style.display = 'none';
-            // 关闭弹窗后，恢复禁止滚动（保持主页原本不滚动的设定）
-            document.body.style.overflow = 'hidden'; 
+            document.body.style.overflow = 'hidden'; // 保持禁止滚动
         }
 
-        // 点击弹窗外部关闭
         function closeModalOutside(event) {
             if (event.target === document.getElementById('modalOverlay')) {
                 closeModal();
@@ -233,7 +243,7 @@
         });
     </script>
 
-    <!-- 角落印记 (固定定位，永远在屏幕右下角) -->
+    <!-- 角落印记 -->
     <div style="position: fixed; bottom: 20px; right: 20px; color: #444; font-size: 28px; opacity: 0.5; letter-spacing: 5px; pointer-events: none; z-index: 999;">
         <img src="iris.png" style="height: 24px; opacity: 0.7;">
     </div>
