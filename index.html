@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>0x52686561 | 神圣殉道录 </title>
     <style>
-        body {
+        /* 禁用 HTML 和 Body 的滚动 */
+        html, body {
             margin: 0;
             padding: 0;
-            height: 100%;  
-            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* 彻底禁止滚动条 */
         }
-        body{
+
+        body {
             height: 100vh;
             background-color: #fff; 
             background-image: url('bg.png');
-            /* 用 cover 铺满，并用 fixed 固定住，不然会变形 */
             background-size: cover; 
             background-position: center center; 
             background-attachment: fixed; 
@@ -31,7 +33,7 @@
             height: 100vh;
         }
 
-        /* 🌟 星星样式（闪烁） */
+        /* 🌟 星星样式（黑色闪烁） */
         .star {
             position: absolute;
             width: 15px;   
@@ -56,6 +58,7 @@
             background: radial-gradient(circle, #000, #333); 
         }
         
+        /* 星星悬停标签 */
         .star-label {
             position: absolute;
             top: 25px;    
@@ -103,7 +106,6 @@
             color: #222;
         }
 
-        /* 弹窗右上角的关闭按钮 */
         .modal-close {
             position: absolute;
             top: 15px;
@@ -134,47 +136,48 @@
     <!-- 首页背景星星导航 -->
     <div class="star-map">
         <!-- 星星1：小说 -->
-        <div class="star" style="top: 30%; left: 32%;" onclick="openModal('novel')">
+        <div class="star" style="top: 32%; left: 34%;" onclick="openModal('novel')">
             <div class="star-label">圣典与手稿</div>
         </div>
         <!-- 星星2：角色 -->
-        <div class="star" style="top: 18%; right: 28%;" onclick="openModal('character')">
+        <div class="star" style="top: 20%; right: 28%;" onclick="openModal('character')">
             <div class="star-label">殉道者名录</div>
         </div>
         <!-- 星星3：势力 -->
-        <div class="star" style="bottom: 30%; left: 25%;" onclick="openModal('faction')">
+        <div class="star" style="bottom: 32%; left: 27%;" onclick="openModal('faction')">
             <div class="star-label">帝国档案</div>
         </div>
         <!-- 星星4：留言 -->
-        <div class="star" style="bottom: 25%; right: 28%;" onclick="openModal('guestbook')">
+        <div class="star" style="bottom: 22%; right: 30%;" onclick="openModal('guestbook')">
             <div class="star-label">大祈祷室</div>
         </div>
     </div>
 
-    <!-- 底部铭文区域 -->
-    <div style="background: rgba(255, 255, 255, 0.85); padding: 15px 20px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; text-align: center; position: relative; z-index: 1;">
-        <p style="font-size: 20px; letter-spacing: 3px; line-height: 1.8; color: #222; max-width: 700px; margin: 0 auto; font-weight: 300;">
+    <!-- 底部铭文区域 (锁定在屏幕底部) -->
+    <div style="position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.85); padding: 15px 0; border-top: 1px solid #ddd; text-align: center; z-index: 1;">
+        <p style="font-size: 18px; letter-spacing: 3px; line-height: 1.6; color: #222; max-width: 700px; margin: 0 auto; font-weight: 300;">
             “帝皇的圣光指引着你，<br>翻阅此卷，见证殉道者的荣光。”
         </p>
-        <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #ccc; width: 150px; margin-left: auto; margin-right: auto;">
-            <span style="font-size: 13px; color: #666; letter-spacing: 1px;">
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc; width: 120px; margin-left: auto; margin-right: auto;">
+            <span style="font-size: 12px; color: #666; letter-spacing: 1px;">
                 —— 0x52686561
             </span>
         </div>
     </div>
 
-     <div id="modalOverlay" class="modal-overlay" onclick="closeModalOutside(event)">
+    <!-- 弹窗容器 -->
+    <div id="modalOverlay" class="modal-overlay" onclick="closeModalOutside(event)">
         <div class="modal-box">
             <span class="modal-close" onclick="closeModal()">✖</span>
             
-            <!-- 这里的文字会根据你点的星星自动替换 -->
+            <!-- 动态替换的标题和内容 -->
             <h2 id="modalTitle">标题</h2>
             <p id="modalContent">内容</p>
         </div>
     </div>
 
     <script>
-        // 数据配置：把每个板块的内容放到这里
+        // 数据配置
         const modalData = {
             'novel': {
                 title: '圣典与手稿',
@@ -194,24 +197,26 @@
             }
         };
 
-        // 打开弹窗函数
+        // 打开弹窗
         function openModal(id) {
             const data = modalData[id];
             if(data) {
                 document.getElementById('modalTitle').innerText = data.title;
                 document.getElementById('modalContent').innerText = data.content;
-                document.getElementById('modalOverlay').style.display = 'flex'; // 弹窗出现
-                document.body.style.overflow = 'hidden'; // 禁止背后页面滚动
+                document.getElementById('modalOverlay').style.display = 'flex'; 
+                // 打开弹窗时，强制禁止后面的页面背景滚动
+                document.body.style.overflow = 'hidden'; 
             }
         }
 
-        // 关闭弹窗函数
+        // 关闭弹窗
         function closeModal() {
             document.getElementById('modalOverlay').style.display = 'none';
-            document.body.style.overflow = 'auto'; // 恢复页面滚动
+            // 关闭弹窗后，恢复禁止滚动（保持主页原本不滚动的设定）
+            document.body.style.overflow = 'hidden'; 
         }
 
-        // 点击弹窗灰色背景关闭
+        // 点击弹窗外部关闭
         function closeModalOutside(event) {
             if (event.target === document.getElementById('modalOverlay')) {
                 closeModal();
@@ -228,7 +233,7 @@
         });
     </script>
 
-    <!-- 角落印记 -->
+    <!-- 角落印记 (固定定位，永远在屏幕右下角) -->
     <div style="position: fixed; bottom: 20px; right: 20px; color: #444; font-size: 28px; opacity: 0.5; letter-spacing: 5px; pointer-events: none; z-index: 999;">
         <img src="iris.png" style="height: 24px; opacity: 0.7;">
     </div>
