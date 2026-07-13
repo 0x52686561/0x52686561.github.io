@@ -7,7 +7,12 @@
     <style>
         body {
             margin: 0;
-            overflow-x: hidden;
+            padding: 0;
+            height: 100%;  
+            overflow: hidden;
+        }
+        body{
+            height: 100vh;
             background-color: #fff; 
             background-image: url('bg.png');
             /* 用 cover 铺满，并用 fixed 固定住，不然会变形 */
@@ -31,33 +36,33 @@
             position: absolute;
             width: 15px;   
             height: 15px;  
-            background: radial-gradient(circle, #fff 10%, #aaa 80%, transparent 100%);
+            background: radial-gradient(circle, #222 30%, #555 70%, transparent 100%);
             border-radius: 50%;
-            box-shadow: 0 0 8px rgba(100, 100, 100, 0.5); 
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.4); 
             cursor: pointer;
             transition: all 0.3s ease;
             animation: twinkle 2.5s infinite ease-in-out alternate;
         }
-        
+       
         @keyframes twinkle {
             0% { opacity: 0.5; transform: scale(0.9); box-shadow: 0 0 4px rgba(100,100,100,0.3); }
             100% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 12px rgba(100,100,100,0.8); }
         }
 
         .star:hover {
-            transform: scale(1.7) !important;
-            box-shadow: 0 0 20px rgba(50, 50, 50, 0.9);
+            transform: scale(1.6) !important;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
             animation: none; 
-            background: radial-gradient(circle, #333, #888); 
+            background: radial-gradient(circle, #000, #333); 
         }
-
+        
         .star-label {
             position: absolute;
             top: 25px;    
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.8);
-            color: #111;
+            background: rgba(50, 50, 50, 0.9); /* 深灰色半透明底 */
+            color: #eee; /* 浅灰色字 */
             padding: 6px 16px;
             border: none;
             border-radius: 4px;
@@ -68,9 +73,8 @@
             font-size: 14px;
             font-weight: 500; 
             letter-spacing: 1px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
-
+        
         .star:hover .star-label {
             opacity: 1;
         }
@@ -148,7 +152,7 @@
     </div>
 
     <!-- 底部铭文区域 -->
-    <div style="background: rgba(255, 255, 255, 0.85); padding: 40px 20px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; text-align: center; position: relative; z-index: 1;">
+    <div style="background: rgba(255, 255, 255, 0.85); padding: 15px 20px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; text-align: center; position: relative; z-index: 1;">
         <p style="font-size: 20px; letter-spacing: 3px; line-height: 1.8; color: #222; max-width: 700px; margin: 0 auto; font-weight: 300;">
             “帝皇的圣光指引着你，<br>翻阅此卷，见证殉道者的荣光。”
         </p>
@@ -159,8 +163,7 @@
         </div>
     </div>
 
-    <*弹出层容器 (点击星星后出现这个)*>
-    <div id="modalOverlay" class="modal-overlay" onclick="closeModalOutside(event)">
+     <div id="modalOverlay" class="modal-overlay" onclick="closeModalOutside(event)">
         <div class="modal-box">
             <span class="modal-close" onclick="closeModal()">✖</span>
             
