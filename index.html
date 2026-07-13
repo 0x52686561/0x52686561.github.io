@@ -8,16 +8,14 @@
        body {
             margin: 0;
             overflow-x: hidden;
-           background-color: #fff; /* 或者 background-color: transparent; */
+            background-color: #fff;  /* 【修改1】：纯黑改成纯白，配合你的白底图片 */
             background-image: url('bg.png');
             background-size: 100% 100%; 
-            /* 注释：下面这行改成了 center top，留出给 JS 调整上下的空间 */
             background-position: center top; 
-            /* 注释：这个一定要删掉或者改为 scroll，否则背景不会随鼠标动 */
             background-attachment: scroll; 
-            color: white;
+            color: #000; /* 【修改2】：原本是 white，改成黑色 #000 */
             font-family: sans-serif;
-            transition: background-position 0.1s ease-out; /* 增加平滑过渡 */
+            transition: background-position 0.1s ease-out;
         }
 
         /* 星星容器，充满屏幕 */
@@ -49,7 +47,7 @@
             top: 35px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.7);
+            rgba(255,255,255,0.8);
             padding: 5px 10px;
             border: 1px solid #888;
             border-radius: 5px;
@@ -103,7 +101,7 @@
     <div style="background: rgba(0,0,0,0.8); padding: 40px 20px; border-top: 2px solid #444; border-bottom: 2px solid #444; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.9) inset;">
         
         <!-- 圣典引言 -->
-        <p style="font-size: 20px; letter-spacing: 3px; line-height: 1.8; color: #dcdcdc; max-width: 700px; margin: 0 auto; font-weight: 300;">
+        <p style="font-size: 20px; letter-spacing: 3px; line-height: 1.8; color: #222; max-width: 700px; margin: 0 auto; font-weight: 300;">
             “帝皇的圣光指引着你，<br>翻阅此卷，见证殉道者的荣光。”
         </p>
 
