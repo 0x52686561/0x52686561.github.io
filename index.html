@@ -10,7 +10,7 @@
             overflow-x: hidden;
             background-color: #fff; 
             background-image: url('bg.png');
-            background-size: 100% 100%; 
+            background-size: cover; 
             background-position: center top; 
             background-attachment: scroll; 
             color: #000; 
@@ -25,104 +25,107 @@
             height: 100vh;
         }
 
-        /* 🌟 星星样式（一闪一闪） */
+        /* 🌟 星星样式（15px，闪烁） */
         .star {
             position: absolute;
             width: 8px;   
             height: 8px;  
             background: radial-gradient(circle, #fff 10%, #aaa 80%, transparent 100%);
             border-radius: 50%;
-            box-shadow: 0 0 6px rgba(100, 100, 100, 0.5); /* 阴影也减弱 */
+            box-shadow: 0 0 8px rgba(100, 100, 100, 0.5); 
             cursor: pointer;
             transition: all 0.3s ease;
             
-            /* ✨ 开启闪烁动画：2秒一个循环 */
-            animation: twinkle 2s infinite ease-in-out alternate;
+            /* ✨ 开启闪烁动画 */
+            animation: twinkle 2.5s infinite ease-in-out alternate;
         }
         
-        /* 定义闪烁动画关键帧 */
+        /* 闪烁动画 */
         @keyframes twinkle {
-            0% { opacity: 0.6; transform: scale(0.9); box-shadow: 0 0 2px rgba(100,100,100,0.3); }
-            100% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 10px rgba(100,100,100,0.8); }
+            0% { opacity: 0.5; transform: scale(0.9); box-shadow: 0 0 4px rgba(100,100,100,0.3); }
+            100% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 12px rgba(100,100,100,0.8); }
         }
 
-        /* 鼠标悬停时的效果（变大、停止闪烁变实心） */
+        /* 鼠标悬停时的效果 */
         .star:hover {
-            transform: scale(1.6) !important;
-            box-shadow: 0 0 15px rgba(50, 50, 50, 0.9);
-            animation: none; /* 鼠标放上去时停止闪烁 */
-            background: radial-gradient(circle, #333, #888); /* 变黑一点，有质感 */
+            transform: scale(1.7) !important;
+            box-shadow: 0 0 20px rgba(50, 50, 50, 0.9);
+            animation: none; 
+            background: radial-gradient(circle, #333, #888); 
         }
 
-        /* 星星上面的文字标签 */
+        /* 星星上面的文字标签（无边框，半透明白底） */
         .star-label {
             position: absolute;
-            top: 25px;    /* 因为星星变小了，文字位置稍微调高一点 */
+            top: 25px;    
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.9); /* 半透明白底黑字 */
-            color: #222;
-            padding: 5px 12px;
-            border: 1px solid #999;
-            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.8); /* 半透明白底 */
+            color: #111; /* 深灰黑字 */
+            padding: 6px 16px;
+            border: none; /* 彻底不要边框 */
+            border-radius: 4px;
             opacity: 0;
             transition: opacity 0.3s;
             white-space: nowrap;
             pointer-events: none; 
             font-size: 14px;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-weight: 500; 
+            letter-spacing: 1px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05); /* 极浅的投影，代替边框 */
         }
 
         .star:hover .star-label {
             opacity: 1;
         }
 
-        /* 点击后展开的内容区（改成白底深灰字） */
+        /* 点击后展开的内容区 */
         .content-section {
             display: none; 
             padding: 50px; 
             min-height: 300px;
-            background: rgba(255, 255, 255, 0.92); /* 白底 */
+            background: rgba(255, 255, 255, 0.92); 
             border-top: 1px solid #ccc;
             border-bottom: 1px solid #ccc;
             margin-top: 20px;
             text-align: center; 
-            color: #222; /* 内容区文字改为深灰色 */
+            color: #222; 
         }
         .active-section { display: block; }
         
-        /* 内容区的标题 */
         .content-section h2 {
             color: #000;
             margin-bottom: 30px;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 首页背景星星导航 -->
+    <!-- 首页背景星星导航（位置已固定为红圈处） -->
     <div class="star-map">
-        <!-- 星星1：小说 -->
-        <div class="star" style="top: 20%; left: 25%;" onclick="showSection('novel')">
+        <!-- 星星1：小说（左上） -->
+        <div class="star" style="top: 30%; left: 32%;" onclick="showSection('novel')">
             <div class="star-label">⚜︎ 圣典与手稿</div>
         </div>
-        <!-- 星星2：角色 -->
-        <div class="star" style="top: 30%; right: 25%;" onclick="showSection('character')">
+        
+        <!-- 星星2：角色（右上） -->
+        <div class="star" style="top: 18%; right: 28%;" onclick="showSection('character')">
             <div class="star-label">⚜︎ 殉道者名录</div>
         </div>
-        <!-- 星星3：势力 -->
-        <div class="star" style="bottom: 35%; left: 20%;" onclick="showSection('faction')">
+        
+        <!-- 星星3：势力（左下） -->
+        <div class="star" style="bottom: 30%; left: 25%;" onclick="showSection('faction')">
             <div class="star-label">⚜︎ 帝国档案</div>
         </div>
-        <!-- 星星4：留言 -->
-        <div class="star" style="bottom: 25%; right: 30%;" onclick="showSection('guestbook')">
+        
+        <!-- 星星4：留言（右下） -->
+        <div class="star" style="bottom: 25%; right: 28%;" onclick="showSection('guestbook')">
             <div class="star-label">⚜︎ 大祈祷室</div>
         </div>
     </div>
 
-    <!-- 底部铭文区域（改成白底深灰字，和白底黑线图完美融合） -->
+    <!-- 底部铭文区域 -->
     <div style="background: rgba(255, 255, 255, 0.85); padding: 40px 20px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; text-align: center;">
         <p style="font-size: 20px; letter-spacing: 3px; line-height: 1.8; color: #222; max-width: 700px; margin: 0 auto; font-weight: 300;">
             “帝皇的圣光指引着你，<br>翻阅此卷，见证殉道者的荣光。”
@@ -168,13 +171,13 @@
         document.addEventListener('mousemove', function(e) {
             const x = (e.clientX / window.innerWidth - 0.5) * 2;
             const y = (e.clientY / window.innerHeight - 0.5) * 2;
-            const moveX = x * 3; 
-            const moveY = y * 3;
+            const moveX = x * 2; 
+            const moveY = y * 2;
             document.body.style.backgroundPosition = `calc(50% + ${moveX}px) calc(50% + ${moveY}px)`;
         });
     </script>
 
-    <!-- 角落的印记装饰 (白底黑图，改成深灰色，不会太突兀) -->
+    <!-- 角落的印记装饰 -->
     <div style="position: fixed; bottom: 20px; right: 20px; color: #444; font-size: 28px; opacity: 0.5; letter-spacing: 5px; pointer-events: none; z-index: 999;">
         <img src="iris.png" style="height: 24px; opacity: 0.7;">
     </div>
