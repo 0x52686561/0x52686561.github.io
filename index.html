@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>0x52686561 | 神圣殉道录 </title>
     <style>
-       body {
+        body {
             margin: 0;
             overflow-x: hidden;
             background-color: #fff; 
             background-image: url('bg.png');
-            /* ⭐️ 重点修改：强制宽高自适应，保证无论屏幕多大，图片绝对不拉伸变形，且居中！ */
-            background-size: contain; 
+            /* 用 cover 铺满，并用 fixed 固定住，不然会变形 */
+            background-size: cover; 
             background-position: center center; 
-            background-attachment: fixed; /* 固定背景，让视差效果更平滑 */
+            background-attachment: fixed; 
             color: #000; 
             font-family: sans-serif;
             transition: background-position 0.1s ease-out;
@@ -26,7 +26,7 @@
             height: 100vh;
         }
 
-        /* 🌟 星星样式（15px，闪烁） */
+        /* 🌟 星星样式（闪烁） */
         .star {
             position: absolute;
             width: 15px;   
@@ -36,18 +36,14 @@
             box-shadow: 0 0 8px rgba(100, 100, 100, 0.5); 
             cursor: pointer;
             transition: all 0.3s ease;
-            
-            /* ✨ 开启闪烁动画 */
             animation: twinkle 2.5s infinite ease-in-out alternate;
         }
         
-        /* 闪烁动画 */
         @keyframes twinkle {
             0% { opacity: 0.5; transform: scale(0.9); box-shadow: 0 0 4px rgba(100,100,100,0.3); }
             100% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 12px rgba(100,100,100,0.8); }
         }
 
-        /* 鼠标悬停时的效果 */
         .star:hover {
             transform: scale(1.7) !important;
             box-shadow: 0 0 20px rgba(50, 50, 50, 0.9);
@@ -55,16 +51,15 @@
             background: radial-gradient(circle, #333, #888); 
         }
 
-        /* 星星上面的文字标签（无边框，半透明白底） */
         .star-label {
             position: absolute;
             top: 25px;    
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.8); /* 半透明白底 */
-            color: #111; /* 深灰黑字 */
+            background: rgba(255, 255, 255, 0.8);
+            color: #111;
             padding: 6px 16px;
-            border: none; /* 彻底不要边框 */
+            border: none;
             border-radius: 4px;
             opacity: 0;
             transition: opacity 0.3s;
@@ -73,61 +68,87 @@
             font-size: 14px;
             font-weight: 500; 
             letter-spacing: 1px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05); /* 极浅的投影，代替边框 */
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
         .star:hover .star-label {
             opacity: 1;
         }
 
-        /* 点击后展开的内容区 */
-        .content-section {
-            display: none; 
-            padding: 50px; 
-            min-height: 300px;
-            background: rgba(255, 255, 255, 0.92); 
-            border-top: 1px solid #ccc;
-            border-bottom: 1px solid #ccc;
-            margin-top: 20px;
-            text-align: center; 
-            color: #222; 
+        /* 弹窗样式 */
+        .modal-overlay {
+            display: none; /* 默认隐藏 */
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.4); /* 背景半透明遮罩 */
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px); /* 背景稍微模糊一点，更有质感 */
         }
-        .active-section { display: block; }
-        
-        .content-section h2 {
+
+        .modal-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            text-align: center;
+            color: #222;
+        }
+
+        /* 弹窗右上角的关闭按钮 */
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.2s;
+            font-weight: bold;
+        }
+        .modal-close:hover {
             color: #000;
-            margin-bottom: 30px;
-            letter-spacing: 3px;
+        }
+
+        .modal-box h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+        .modal-box p {
+            line-height: 1.8;
+            color: #444;
         }
     </style>
 </head>
 <body>
 
-    <!-- 首页背景星星导航（位置已固定为红圈处） -->
+    <!-- 首页背景星星导航 -->
     <div class="star-map">
-        <!-- 星星1：小说（左上） -->
-        <div class="star" style="top: 30%; left: 32%;" onclick="showSection('novel')">
-            <div class="star-label">⚜︎ 圣典与手稿</div>
+        <!-- 星星1：小说 -->
+        <div class="star" style="top: 30%; left: 32%;" onclick="openModal('novel')">
+            <div class="star-label">圣典与手稿</div>
         </div>
-        
-        <!-- 星星2：角色（右上） -->
-        <div class="star" style="top: 18%; right: 28%;" onclick="showSection('character')">
-            <div class="star-label">⚜︎ 殉道者名录</div>
+        <!-- 星星2：角色 -->
+        <div class="star" style="top: 18%; right: 28%;" onclick="openModal('character')">
+            <div class="star-label">殉道者名录</div>
         </div>
-        
-        <!-- 星星3：势力（左下） -->
-        <div class="star" style="bottom: 30%; left: 25%;" onclick="showSection('faction')">
-            <div class="star-label">⚜︎ 帝国档案</div>
+        <!-- 星星3：势力 -->
+        <div class="star" style="bottom: 30%; left: 25%;" onclick="openModal('faction')">
+            <div class="star-label">帝国档案</div>
         </div>
-        
-        <!-- 星星4：留言（右下） -->
-        <div class="star" style="bottom: 25%; right: 28%;" onclick="showSection('guestbook')">
-            <div class="star-label">⚜︎ 大祈祷室</div>
+        <!-- 星星4：留言 -->
+        <div class="star" style="bottom: 25%; right: 28%;" onclick="openModal('guestbook')">
+            <div class="star-label">大祈祷室</div>
         </div>
     </div>
 
     <!-- 底部铭文区域 -->
-    <div style="background: rgba(255, 255, 255, 0.85); padding: 40px 20px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; text-align: center;">
+    <div style="background: rgba(255, 255, 255, 0.85); padding: 40px 20px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; text-align: center; position: relative; z-index: 1;">
         <p style="font-size: 20px; letter-spacing: 3px; line-height: 1.8; color: #222; max-width: 700px; margin: 0 auto; font-weight: 300;">
             “帝皇的圣光指引着你，<br>翻阅此卷，见证殉道者的荣光。”
         </p>
@@ -138,37 +159,63 @@
         </div>
     </div>
 
-    <!-- 内容区域 (点击星星后显示) -->
-    <div id="novel" class="content-section">
-        <h2>圣典与手稿</h2>
-        <p style="color: #444; line-height: 1.6;">关于圣战与殉道者的史诗篇章，皆收录于此。</p>
-    </div>
-    
-    <div id="character" class="content-section">
-        <h2>殉道者名录</h2>
-        <p style="color: #444; line-height: 1.6;">帝皇忠仆，帝国英魂。每一位登场者的生平与影像将铭刻于此。</p>
-    </div>
-    
-    <div id="faction" class="content-section">
-        <h2>帝国档案</h2>
-        <p style="color: #444; line-height: 1.6;">每一个势力的崛起与陨落，都伴随着一场震彻星域的战争。</p>
-    </div>
-    
-    <div id="guestbook" class="content-section">
-        <h2>大祈祷室</h2>
-        <p style="color: #444; line-height: 1.6;">在此向帝皇倾诉，或留下印记。</p>
+    <*弹出层容器 (点击星星后出现这个)*>
+    <div id="modalOverlay" class="modal-overlay" onclick="closeModalOutside(event)">
+        <div class="modal-box">
+            <span class="modal-close" onclick="closeModal()">✖</span>
+            
+            <!-- 这里的文字会根据你点的星星自动替换 -->
+            <h2 id="modalTitle">标题</h2>
+            <p id="modalContent">内容</p>
+        </div>
     </div>
 
     <script>
-        function showSection(id) {
-            document.querySelectorAll('.content-section').forEach(el => el.style.display = 'none');
-            const target = document.getElementById(id);
-            if(target) {
-                target.style.display = 'block';
-                target.scrollIntoView({ behavior: 'smooth' });
+        // 数据配置：把每个板块的内容放到这里
+        const modalData = {
+            'novel': {
+                title: '圣典与手稿',
+                content: '关于圣战与殉道者的史诗篇章，皆收录于此。'
+            },
+            'character': {
+                title: '殉道者名录',
+                content: '帝皇忠仆，帝国英魂。每一位登场者的生平与影像将铭刻于此。'
+            },
+            'faction': {
+                title: '帝国档案',
+                content: '每一个势力的崛起与陨落，都伴随着一场震彻星域的战争。'
+            },
+            'guestbook': {
+                title: '大祈祷室',
+                content: '在此向帝皇倾诉，或留下印记。'
+            }
+        };
+
+        // 打开弹窗函数
+        function openModal(id) {
+            const data = modalData[id];
+            if(data) {
+                document.getElementById('modalTitle').innerText = data.title;
+                document.getElementById('modalContent').innerText = data.content;
+                document.getElementById('modalOverlay').style.display = 'flex'; // 弹窗出现
+                document.body.style.overflow = 'hidden'; // 禁止背后页面滚动
             }
         }
 
+        // 关闭弹窗函数
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+            document.body.style.overflow = 'auto'; // 恢复页面滚动
+        }
+
+        // 点击弹窗灰色背景关闭
+        function closeModalOutside(event) {
+            if (event.target === document.getElementById('modalOverlay')) {
+                closeModal();
+            }
+        }
+
+        // 鼠标视差逻辑
         document.addEventListener('mousemove', function(e) {
             const x = (e.clientX / window.innerWidth - 0.5) * 2;
             const y = (e.clientY / window.innerHeight - 0.5) * 2;
@@ -178,7 +225,7 @@
         });
     </script>
 
-    <!-- 角落的印记装饰 -->
+    <!-- 角落印记 -->
     <div style="position: fixed; bottom: 20px; right: 20px; color: #444; font-size: 28px; opacity: 0.5; letter-spacing: 5px; pointer-events: none; z-index: 999;">
         <img src="iris.png" style="height: 24px; opacity: 0.7;">
     </div>
