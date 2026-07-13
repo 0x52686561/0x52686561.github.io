@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>0x52686561 | 神圣殉道录 </title>
     <style>
-        body {
+       body {
             margin: 0;
             overflow-x: hidden;
             background-color: #fff; 
             background-image: url('bg.png');
-            background-size: cover; 
-            background-position: center top; 
-            background-attachment: scroll; 
+            /* ⭐️ 重点修改：强制宽高自适应，保证无论屏幕多大，图片绝对不拉伸变形，且居中！ */
+            background-size: contain; 
+            background-position: center center; 
+            background-attachment: fixed; /* 固定背景，让视差效果更平滑 */
             color: #000; 
             font-family: sans-serif;
             transition: background-position 0.1s ease-out;
@@ -28,8 +29,8 @@
         /* 🌟 星星样式（15px，闪烁） */
         .star {
             position: absolute;
-            width: 8px;   
-            height: 8px;  
+            width: 15px;   
+            height: 15px;  
             background: radial-gradient(circle, #fff 10%, #aaa 80%, transparent 100%);
             border-radius: 50%;
             box-shadow: 0 0 8px rgba(100, 100, 100, 0.5); 
