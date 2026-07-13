@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>0x52686561 | 神圣殉道录 </title>
+    <style>
+       body {
+            margin: 0;
+            overflow-x: hidden;
+            background-color: #000;
+            background-image: url('bg.png');
+            background-size: cover;
+            /* 注释：下面这行改成了 center top，留出给 JS 调整上下的空间 */
+            background-position: center top; 
+            /* 注释：这个一定要删掉或者改为 scroll，否则背景不会随鼠标动 */
+            background-attachment: scroll; 
+            color: white;
+            font-family: sans-serif;
+            transition: background-position 0.1s ease-out; /* 增加平滑过渡 */
+        }
+
+        /* 星星容器，充满屏幕 */
+        .star-map {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* 星星样式 */
+        .star {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #fff, #aaa);
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255,255,255,0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .star:hover {
+            transform: scale(1.5);
+            box-shadow: 0 0 40px rgba(255,255,255,1);
+        }
+
+        .star-label {
+            position: absolute;
+            top: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border: 1px solid #888;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+            pointer-events: none; /* 防止挡住鼠标 */
+        }
+
+        .star:hover .star-label {
+            opacity: 1;
+        }
+
+        /* 4个内容的占位容器 */
+       .content-section {
+            display: none; 
+            padding: 50px; 
+            min-height: 300px;
+            background: rgba(0,0,0,0.85); 
+            border-top: 1px solid #444;
+            margin-top: 20px;
+            /* ✅ 强烈建议加这行，让内容居中显示，不要太靠边 */
+            text-align: center; 
+        }
+        .active-section { display: block; }
+    </style>
+</head>
+<body>
+
+    <!-- 首页背景星星导航 -->
+    <div class="star-map">
+        <!-- 星星1：小说，放在左上角 -->
+        <div class="star" style="top: 20%; left: 25%;" onclick="showSection('novel')">
+            <div class="star-label"> ⚜︎ 圣典与手稿 </div>
+        </div>
+        <!-- 星星2：角色，放在右上角 -->
+        <div class="star" style="top: 30%; right: 25%;" onclick="showSection('character')">
+            <div class="star-label"> ⚜︎ 殉道者名录 </div>
+        </div>
+        <!-- 星星3：势力，放在左下角 -->
+        <div class="star" style="bottom: 35%; left: 20%;" onclick="showSection('faction')">
+            <div class="star-label"> ⚜︎ 帝国档案 </div>
+        </div>
+        <!-- 星星4：留言，放在右下角 -->
+        <div class="star" style="bottom: 25%; right: 30%;" onclick="showSection('guestbook')">
+            <div class="star-label"> ⚜︎ 大祈祷室 </div>
+        </div>
+    </div>
+
+    <!-- 底部圣典卷首铭文 -->
+    <div style="background: rgba(0,0,0,0.8); padding: 40px 20px; border-top: 2px solid #444; border-bottom: 2px solid #444; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.9) inset;">
+        
+        <!-- 圣典引言 -->
+        <p style="font-size: 20px; letter-spacing: 3px; line-height: 1.8; color: #dcdcdc; max-width: 700px; margin: 0 auto; font-weight: 300;">
+            “帝皇的圣光指引着你，<br>翻阅此卷，见证殉道者的荣光。”
+        </p>
+
+        <!-- 下方的落款/动态提醒 -->
+        <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #555; width: 150px; margin-left: auto; margin-right: auto;">
+            <span style="font-size: 13px; color: #888; letter-spacing: 1px;">
+                —— 0x52686561 于帝皇圣光之下
+            </span>
+        </div>
+
+        <!-- 如果你想保留动态更新列表，可以解开下面这段注释，并把你最新写的动态放进去 -->
+        <!-- 
+        <div style="margin-top: 30px; font-size: 14px; color: #aaa;">
+            <span style="border: 1px solid #555; padding: 5px 15px; border-radius: 3px;">最新动态：圣典第一篇章已开卷</span>
+        </div> 
+        -->
+    </div>
+
+    <!-- 内容区域 (点击星星后显示) -->
+    <div id="novel" class="content-section">
+        <h2>圣典与手稿</h2>
+        <p style="color: #ccc; line-height: 1.6;">
+            关于圣战与殉道者的史诗篇章，皆收录于此。</p>
+    </div>
+    
+    <div id="character" class="content-section">
+        <h2>殉道者名录</h2>
+        <p>帝皇忠仆，帝国英魂。每一位登场者的生平与影像将铭刻于此。</p>
+    </div>
+    
+    <div id="faction" class="content-section">
+        <h2>帝国档案</h2>
+        <p>每一个势力的崛起与陨落，都伴随着一场震彻星域的战争。</p>
+    </div>
+    
+    <div id="guestbook" class="content-section">
+        <h2>大祈祷室</h2>
+        <p>在此向帝皇倾诉，或留下印记。</p>
+    </div>
+
+    <script>
+        // 1. 星星点击跳转逻辑
+        function showSection(id) {
+            document.querySelectorAll('.content-section').forEach(el => el.style.display = 'none');
+            const target = document.getElementById(id);
+            if(target) {
+                target.style.display = 'block';
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // 2. 新增：鼠标移动背景视差逻辑
+        document.addEventListener('mousemove', function(e) {
+            // 获取鼠标在屏幕中心的相对位置（范围大概是 -1 到 1）
+            const x = (e.clientX / window.innerWidth - 0.5) * 2;
+            const y = (e.clientY / window.innerHeight - 0.5) * 2;
+
+            // 设置移动幅度（数字越小，移动越轻微。比如 3% 就是上下左右动 3% 的画面）
+            const moveX = x * 3; 
+            const moveY = y * 3;
+
+            // 将计算出的坐标应用到 body 的背景图上
+            document.body.style.backgroundPosition = `calc(50% + ${moveX}px) calc(50% + ${moveY}px)`;
+        });
+    </script>
+      <!-- 角落的鸢尾花印记装饰 -->
+    <div style="position: fixed; bottom: 20px; right: 20px; color: #888; font-size: 28px; opacity: 0.6; letter-spacing: 5px; pointer-events: none; z-index: 999;">
+        <img src="iris.png" style="height: 30px;">
+    </div>
+</body>
+</html>
