@@ -21,7 +21,7 @@
         body {
             height: 100vh;
             background-color: #fff; 
-            background-image: url('bg.jpg'); /* 已修改为 jpg 格式引用 */
+            background-image: url('bg.jpg');
             background-size: cover; 
             background-position: center center; 
             background-attachment: fixed; 
@@ -68,36 +68,33 @@
             z-index: 20;
         }
         
-          /* 卷轴提示框（白底黑边，淡入显示） */
+        /* 白底黑字卷轴 */
         .star-label {
             position: absolute;
             top: 45px;
             left: 50%;
             transform: translateX(-50%);
             
-            /* 基础样式 */
-            background: #fff;
-            border: 2px solid #000;
+            background: #fff; /* 纯白底 */
+            color: #000;      /* 纯黑字 */
+            
             padding: 0 20px;
             height: 48px;
             line-height: 48px;
-            
             font-size: 18px;
             letter-spacing: 4px;
             white-space: nowrap;
             text-align: center;
             pointer-events: none;
             
-            /* 初始状态：透明且略微缩小 */
+            /* 动画：透明度淡入 */
             opacity: 0;
-            transform: translateX(-50%) scale(0.95);
-            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+            transition: opacity 0.4s ease-in-out;
         }
 
-        /* 悬停状态：渐显并还原为正常大小 */
+        /* 悬停展开 */
         .star:hover .star-label {
             opacity: 1;
-            transform: translateX(-50%) scale(1);
         }
         
         /* 弹窗 (Modal) 样式 */
