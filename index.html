@@ -58,12 +58,13 @@
             background-repeat: no-repeat;
             background-position: center;
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            animation: twinkle 3s infinite ease-in-out alternate;
+            animation: rotateTwinkle 6s infinite linear;
         }
        
-        @keyframes twinkle {
-            0% { opacity: 0.5; transform: scale(0.95) rotate(0deg); }
-            100% { opacity: 1; transform: scale(1.05) rotate(15deg); }
+        @keyframes rotateTwinkle {
+            0% { transform: rotate(0deg) scale(0.9);opacity: 0.7; }
+            50% {transform: rotate(180deg) scale(1.1); opacity: 1; }
+            100% {transform: rotate(360deg) scale(0.9); opacity: 0.7; }
         }
 
         /* hover 时只对图标本身生效，不再影响子元素 star-label */
