@@ -68,66 +68,36 @@
             z-index: 20;
         }
         
-         /* 横向缩放卷轴 */
+          /* 卷轴提示框（白底黑边，淡入显示） */
         .star-label {
             position: absolute;
             top: 45px;
             left: 50%;
+            transform: translateX(-50%);
             
-            /* 加个白色背景的外阴影，防止黑块盖住 */
+            /* 基础样式 */
             background: #fff;
-            box-shadow: 0 0 0 4px #fff; /* 给白色加一层白边屏障 */
-            
-            color: #000;
-            border: 2px solid #000; 
+            border: 2px solid #000;
             padding: 0 20px;
             height: 48px;
             line-height: 48px;
+            
             font-size: 18px;
             letter-spacing: 4px;
             white-space: nowrap;
             text-align: center;
             pointer-events: none;
-            border-radius: 2px; /* 微微一点点圆角，防止锯齿黑边 */
             
-            /* 核心动画逻辑 */
-            transform: translateX(-50%) scaleX(0); 
-            transform-origin: center;
+            /* 初始状态：透明且略微缩小 */
             opacity: 0;
-            transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
-            
-            /* 告诉浏览器这是一个单独的绘制层，防止渲染错乱 */
-            will-change: transform, opacity;
-            backface-visibility: hidden;
+            transform: translateX(-50%) scale(0.95);
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
         }
 
-        /* 两端的黑色实心小圆点 */
-        .star-label::before,
-        .star-label::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 10px;
-            height: 10px;
-            background: #000;
-            border-radius: 50%;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            z-index: 2;
-        }
-        .star-label::before { left: -5px; }
-        .star-label::after { right: -5px; }
-
-        /* 悬停展开 */
+        /* 悬停状态：渐显并还原为正常大小 */
         .star:hover .star-label {
-            transform: translateX(-50%) scaleX(1); 
             opacity: 1;
-        }
-
-        .star:hover .star-label::before,
-        .star:hover .star-label::after {
-            opacity: 1;
+            transform: translateX(-50%) scale(1);
         }
         
         /* 弹窗 (Modal) 样式 */
