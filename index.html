@@ -20,11 +20,12 @@
 
         body {
             height: 100vh;
-            background-color: #fff; 
+            background-color: #ffffff; 
             background-image: url('bg.jpg');
             background-size: cover; 
             background-position: center center; 
             background-attachment: fixed; 
+            color: #111111; /* 全局文字改为深黑色 */
                        
             /*  使用京华老宋体 */
             font-family: 'jhlst', serif; 
@@ -70,13 +71,10 @@
         /* 白底黑字卷轴 */
         .star-label {
             position: absolute;
-            top: 45px;
+            top: 35px;
             left: 50%;
             transform: translateX(-50%);
-            
-            background: #fff; /* 纯白底 */
-            color: #000;      /* 纯黑字 */
-            
+            background: rgba(255,255,255,0.9); /* 悬浮提示框变白底 */
             padding: 0 20px;
             height: 48px;
             line-height: 48px;
@@ -85,6 +83,7 @@
             white-space: nowrap;
             text-align: center;
             pointer-events: none;
+            color: #000; /* 提示文字变黑 */
             
             /* 动画：透明度淡入 */
             opacity: 0;
