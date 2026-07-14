@@ -43,10 +43,10 @@
             background-position: center;
             cursor: pointer;
             z-index: 10;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             
             /* 呼吸闪烁动画 */
-            animation: twinkle 2.5s infinite ease-in-out alternate;
+            animation: twinkle 3s infinite ease-in-out alternate;
         }
        
         @keyframes twinkle {
@@ -58,7 +58,7 @@
         .star:hover {
             animation: none; 
             transform: scale(1.4) !important;
-            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8)); /* 散发金光！ */
+            filter: brightness(0.2) contrast(1.5); 
             z-index: 20;
         }
         
