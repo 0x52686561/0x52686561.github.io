@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>0x52686561 | 神圣殉道录 </title>
+    <title>0x52686561 | 神圣殉道录</title>
+    
+    <!-- 引入京华老宋体 (jhlst) -->
+    <link rel="stylesheet" href="https://font-now.netlify.app/api/css?url=https://mirrors.ghproxy.com/https://raw.githubusercontent.com/gh-mirrors/chinese-free-web-font-storage/main/packages/jinghua-laosongti/fonts/JingHuaLaoSongTi-Regular.ttf">
+
     <style>
         /* 彻底禁止 HTML 和 Body 滚动 */
         html, body {
@@ -17,12 +21,15 @@
         body {
             height: 100vh;
             background-color: #fff; 
-            background-image: url('bg.jpg');
+            background-image: url('bg.jpg'); /* 已修改为 jpg 格式引用 */
             background-size: cover; 
             background-position: center center; 
             background-attachment: fixed; 
             color: #000; 
-            font-family: sans-serif;
+            
+            /* 🚀 全站强制使用京华老宋体 */
+            font-family: 'jhlst', serif; 
+            
             transition: background-position 0.1s ease-out;
         }
 
@@ -33,61 +40,56 @@
             height: 100vh;
         }
 
+        /* 图片版黑色星芒（无金光） */
         .star {
             position: absolute;
-            width: 40px;        
-            height: 40px;       
-            background-image: url('star.png'); 
-            background-size: contain;          
+            width: 42px;
+            height: 42px;
+            background-image: url('star.png');
+            background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             cursor: pointer;
             z-index: 10;
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             
-            /* 呼吸闪烁动画 */
             animation: twinkle 3s infinite ease-in-out alternate;
         }
        
         @keyframes twinkle {
-            0% { opacity: 0.6; transform: scale(0.9) rotate(0deg); }
-            100% { opacity: 1; transform: scale(1.1) rotate(10deg); }
+            0% { opacity: 0.5; transform: scale(0.95) rotate(0deg); }
+            100% { opacity: 1; transform: scale(1.05) rotate(15deg); }
         }
 
-        /* 鼠标悬停时的效果：变大、旋转、发光 */
         .star:hover {
             animation: none; 
-            transform: scale(1.4) !important;
+            transform: scale(1.25) !important;
             filter: brightness(0.2) contrast(1.5); 
             z-index: 20;
         }
         
-               /* 横向卷轴 - 白底黑线版 */
+        /* 🎨 横向展开卷轴 - 白底黑线版 */
         .star-label {
             position: absolute;
-            top: 45px;          /* 距离星星下边缘的距离 */
+            top: 45px;
             left: 50%;
             transform: translateX(-50%);
             
-            /* 卷轴基础样式 */
             background: #fff;
             color: #000;
-            border: 2px solid #000; /* 黑色描边 */
-            padding: 0 20px;        /* 初始内边距为0，用于动画 */
-            font-size: 16px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            white-space: nowrap;    /* 保证文字不换行 */
+            border: 2px solid #000;
+            padding: 0 20px;
+            font-size: 18px; /* 字体稍微调大，更有老宋体韵味 */
+            letter-spacing: 4px;
+            white-space: nowrap;
             
-            /* 核心：横向展开动画 (使用 max-width) */
-            max-width: 0;           /* 初始宽度为0 */
+            max-width: 0;
             opacity: 0;
             overflow: hidden;
             transition: max-width 0.5s ease-in-out, opacity 0.3s ease, padding 0.5s ease;
             pointer-events: none;
         }
 
-        /* 卷轴两端画两个小圆点（假装是纸卷的轴） */
         .star-label::before,
         .star-label::after {
             content: '·';
@@ -103,20 +105,18 @@
         .star-label::before { left: 8px; }
         .star-label::after { right: 8px; }
 
-        /* 鼠标悬停时，横向展开卷轴 */
         .star:hover .star-label {
-            max-width: 300px;      /* 展开后的最大宽度 (如果文字长可以改大) */
+            max-width: 300px;
             opacity: 1;
-            padding: 12px 30px;    /* 展开后的内边距 */
+            padding: 12px 30px;
             pointer-events: none;
         }
 
-        /* 展开后，两端的“轴”出现 */
         .star:hover .star-label::before,
         .star:hover .star-label::after {
             opacity: 1;
         }
-        
+
         /* 弹窗 (Modal) 样式 */
         .modal-overlay {
             display: none; 
@@ -153,38 +153,38 @@
         }
         .modal-close:hover { color: #000; }
 
-        .modal-box h2 { margin-top: 0; margin-bottom: 20px; letter-spacing: 2px; }
-        .modal-box p { line-height: 1.8; color: #444; }
+        .modal-box h2 { margin-top: 0; margin-bottom: 20px; letter-spacing: 4px; }
+        .modal-box p { line-height: 1.8; color: #444; letter-spacing: 1px; }
 
-        /* 绝对定位 + z-index 覆盖层 */
+        /* 底部铭文区域 */
         .bottom-inscription {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
             background: rgba(255, 255, 255, 0.85);
-            padding: 10px 0;
+            padding: 15px 0;
             border-top: 1px solid #ddd;
             text-align: center;
-            z-index: 5; /* 保证它在图片之上，但在星星之下 */
-            pointer-events: none; /* 让鼠标点击能穿透它直接点到星星 */
+            z-index: 5;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-     <!-- 首页背景星星导航 -->
+    <!-- 首页背景星星导航 -->
     <div class="star-map">
         <!-- 星星1：小说 -->
         <div class="star" style="top: 32%; left: 34%;" onclick="openModal('novel')">
             <div class="star-label">圣典与手稿</div>
         </div>
         <!-- 星星2：角色 -->
-        <div class="star" style="top: 23%; right: 30%;" onclick="openModal('character')">
+        <div class="star" style="top: 20%; right: 28%;" onclick="openModal('character')">
             <div class="star-label">殉道者名录</div>
         </div>
         <!-- 星星3：势力 -->
-        <div class="star" style="bottom: 34%; left: 28%;" onclick="openModal('faction')">
+        <div class="star" style="bottom: 32%; left: 27%;" onclick="openModal('faction')">
             <div class="star-label">帝国档案</div>
         </div>
         <!-- 星星4：留言 -->
@@ -193,13 +193,13 @@
         </div>
     </div>
 
-    <!-- 底部铭文区域 (固定在屏幕底部，绝对不会消失) -->
+    <!-- 底部铭文区域 -->
     <div class="bottom-inscription">
-        <p style="font-size: 12px; letter-spacing: 3px; line-height: 1.6; color: #222; max-width: 700px; margin: 0 auto; font-weight: 300;">
+        <p style="font-size: 20px; letter-spacing: 6px; line-height: 1.6; color: #222; max-width: 700px; margin: 0 auto; font-weight: bold;">
             “帝皇的圣光指引着你，<br>翻阅此卷，见证殉道者的荣光。”
         </p>
-        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc; width: 120px; margin-left: auto; margin-right: auto;">
-            <span style="font-size: 8px; color: #666; letter-spacing: 1px;">
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc; width: 150px; margin-left: auto; margin-right: auto;">
+            <span style="font-size: 14px; color: #666; letter-spacing: 2px;">
                 0x52686561
             </span>
         </div>
@@ -216,10 +216,10 @@
 
     <script>
         const modalData = {
-            'novel': { title: '圣典与手稿', content: '关于圣战与殉道者的史诗篇章，皆收录于此。' },
-            'character': { title: '殉道者名录', content: '帝皇忠仆，帝国英魂。每一位登场者的生平与影像将铭刻于此。' },
-            'faction': { title: '帝国档案', content: '每一个势力的崛起与陨落，都伴随着一场震彻星域的战争。' },
-            'guestbook': { title: '大祈祷室', content: '在此向帝皇倾诉，或留下印记。' }
+            'novel': { title: '圣典与手稿', content: '此卷记载着黑暗纪元中，信仰与怒火交织的史诗篇章。' },
+            'character': { title: '殉道者名录', content: '帝皇忠仆，帝国英魂。每一位登场者的生平与影像皆铭刻于此。' },
+            'faction': { title: '帝国档案', content: '探秘古老星域中的势力更迭，以及那些隐于阴影中的盟约与叛变。' },
+            'guestbook': { title: '大祈祷室', content: '在此向帝皇倾诉，或留下属于你的印记。' }
         };
 
         function openModal(id) {
@@ -234,7 +234,7 @@
 
         function closeModal() {
             document.getElementById('modalOverlay').style.display = 'none';
-            document.body.style.overflow = 'hidden'; // 保持禁止滚动
+            document.body.style.overflow = 'hidden';
         }
 
         function closeModalOutside(event) {
