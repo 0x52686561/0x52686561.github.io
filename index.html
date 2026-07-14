@@ -68,31 +68,30 @@
             z-index: 20;
         }
         
-        /* 白底黑字卷轴 */
         .star-label {
             position: absolute;
-            top: 35px;
+            top: 45px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255,255,255,0.9); /* 悬浮提示框变白底 */
-            padding: 0 20px;
-            height: 48px;
-            line-height: 48px;
+            
+            background: #fff;   /* 纯白底色 */
+            color: #000;        /* 纯黑文字 */
+            border: 1px solid #000; /* 细细的黑边，让它能看清边界 */
+            padding: 10px 24px;
+            
             font-size: 18px;
             letter-spacing: 4px;
             white-space: nowrap;
             text-align: center;
-            pointer-events: none;
-            color: #000; /* 提示文字变黑 */
+            pointer-events: none; /* 防止鼠标点中它 */
             
-            /* 动画：透明度淡入 */
-            opacity: 0;
-            transition: opacity 0.4s ease-in-out;
+            opacity: 0;          /* 默认透明隐藏 */
+            transition: none;    /* 彻底关闭任何动画过渡 */
         }
 
-        /* 悬停展开 */
+        /* 鼠标放上去时：直接显示 */
         .star:hover .star-label {
-            opacity: 1;
+            opacity: 1;          /* 变成不透明，直接显示 */
         }
         
         /* 弹窗 (Modal) 样式 */
