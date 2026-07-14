@@ -35,35 +35,31 @@
 
         .star {
             position: absolute;
-            /* 宽度和高度决定了星星的大小 */
-            width: 30px;
-            height: 30px;
+            width: 40px;        
+            height: 40px;       
+            background-image: url('star.png'); 
+            background-size: contain;          
+            background-repeat: no-repeat;
+            background-position: center;
             cursor: pointer;
             z-index: 10;
             transition: all 0.3s ease;
             
-            /* 🚀 核心：利用遮罩直接切出一个完美的锐利四角星 */
-            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 L15 9 L22 12 L15 15 L12 22 L9 15 L2 12 L9 9 Z' fill='black'/%3E%3C/svg%3E");
-            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 L15 9 L22 12 L15 15 L12 22 L9 15 L2 12 L9 9 Z' fill='black'/%3E%3C/svg%3E");
-            
-            /* 星星的颜色和阴影直接打在背景上 */
-            background: #222; 
-            box-shadow: 0 0 10px rgba(0,0,0,0.2); 
-            
+            /* 呼吸闪烁动画 */
             animation: twinkle 2.5s infinite ease-in-out alternate;
         }
        
         @keyframes twinkle {
-            0% { opacity: 0.6; transform: scale(0.9); }
-            100% { opacity: 1; transform: scale(1.1); }
+            0% { opacity: 0.6; transform: scale(0.9) rotate(0deg); }
+            100% { opacity: 1; transform: scale(1.1) rotate(10deg); }
         }
 
-        /* 鼠标悬停时的效果：变黑、变大、停止闪烁 */
+        /* 鼠标悬停时的效果：变大、旋转、发光 */
         .star:hover {
             animation: none; 
-            transform: scale(1.3) !important;
-            color: #000; /* 纯黑色 */
-            text-shadow: 0 0 20px rgba(0,0,0,0.6);
+            transform: scale(1.4) !important;
+            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8)); /* 散发金光！ */
+            z-index: 20;
         }
         
         /* 星星上面的文字标签 */
@@ -146,26 +142,22 @@
 </head>
 <body>
 
-    <!-- 首页背景星星导航 -->
+     <!-- 首页背景星星导航 -->
     <div class="star-map">
         <!-- 星星1：小说 -->
         <div class="star" style="top: 32%; left: 34%;" onclick="openModal('novel')">
-            &#10034;
             <div class="star-label">圣典与手稿</div>
         </div>
         <!-- 星星2：角色 -->
         <div class="star" style="top: 20%; right: 28%;" onclick="openModal('character')">
-            &#10034;
             <div class="star-label">殉道者名录</div>
         </div>
         <!-- 星星3：势力 -->
         <div class="star" style="bottom: 32%; left: 27%;" onclick="openModal('faction')">
-            &#10034;
             <div class="star-label">帝国档案</div>
         </div>
         <!-- 星星4：留言 -->
         <div class="star" style="bottom: 22%; right: 30%;" onclick="openModal('guestbook')">
-            &#10034;
             <div class="star-label">大祈祷室</div>
         </div>
     </div>
