@@ -68,66 +68,61 @@
             z-index: 20;
         }
         
-        /* 完美横向展开卷轴 - 白底黑线版 (修复版) */
+        /* 横向缩放卷轴*/
         .star-label {
             position: absolute;
             top: 45px;
             left: 50%;
-            transform: translateX(-50%);
             
-            background: #fff;     /* 纯白底色 */
-            color: #000;          /* 纯黑字体 */
-            border: 2px solid #000; /* 黑色粗边框 */
-            
-            /* 固定展开后的高度和留白 */
-            height: 44px;         
-            line-height: 44px;    
-            
-            font-size: 20px;
-            letter-spacing: 6px;
-            white-space: nowrap;
+            background: #fff;
+            color: #000;
+            border: 2px solid #000; /* 黑边 */
+            padding: 0 20px;        /* 文字左右留白 */
+            height: 48px;
+            line-height: 48px;      /* 垂直居中 */
+            font-size: 18px;
+            letter-spacing: 4px;
+            white-space: nowrap;    /* 不换行 */
             text-align: center;
-            
-            /* 核心动画：直接控制宽度 (从0变到100%) */
-            width: 0; 
-            opacity: 0;
-            overflow: hidden;
-            transition: width 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
             pointer-events: none;
             
-            /* 因为高度固定，不用边框盒模型会影响文字位置 */
-            box-sizing: border-box;
+            /* 核心：先把它弄到水平正中间 */
+            transform: translateX(-50%) scaleX(0); 
+            transform-origin: center; /* 从中间向两边展开 */
+            
+            opacity: 0;
+            transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
         }
 
-        /* 卷轴两端的装饰圆点（始终显示） */
+        /* 两端的黑色实心圆点装饰 */
         .star-label::before,
         .star-label::after {
-            content: '●';
+            content: '';
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 14px;
-            color: #000;
+            width: 10px;
+            height: 10px;
+            background: #000;
+            border-radius: 50%; /* 变成圆点 */
             opacity: 0;
             transition: opacity 0.4s ease;
         }
-        .star-label::before { left: 6px; }
-        .star-label::after { right: 6px; }
+        .star-label::before { left: -5px; } /* 居左 */
+        .star-label::after { right: -5px; } /* 居右 */
 
-        /* 鼠标悬停时，横向展开 */
+        /* 鼠标悬停时：横向展开 (scaleX从0变成1) */
         .star:hover .star-label {
-            /* 动画展开的最终宽度，根据文字长度你可以随时修改这个值 */
-            width: 240px;  
+            transform: translateX(-50%) scaleX(1); 
             opacity: 1;
-            pointer-events: none;
-            padding: 0; /* 这里的padding必须为0，否则会算乱 */
         }
 
-        /* 展开后，两端的装饰点出现 */
+        /* 展开后，两端的圆点浮现 */
         .star:hover .star-label::before,
         .star:hover .star-label::after {
             opacity: 1;
         }
+        
         /* 弹窗 (Modal) 样式 */
         .modal-overlay {
             display: none; 
@@ -206,11 +201,11 @@
 
     <!-- 底部铭文区域 -->
     <div class="bottom-inscription">
-        <p style="font-size: 20px; letter-spacing: 6px; line-height: 1.6; color: #222; max-width: 700px; margin: 0 auto; font-weight: bold;">
+        <p style="font-size: 15px; letter-spacing: 6px; line-height: 1.6; color: #222; max-width: 700px; margin: 0 auto; font-weight: bold;">
             “帝皇的圣光指引着你，<br>翻阅此卷，见证殉道者的荣光。”
         </p>
-        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc; width: 150px; margin-left: auto; margin-right: auto;">
-            <span style="font-size: 14px; color: #666; letter-spacing: 2px;">
+        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #ccc; width: 150px; margin-left: auto; margin-right: auto;">
+            <span style="font-size: 8px; color: #666; letter-spacing: 2px;">
                 0x52686561
             </span>
         </div>
