@@ -121,12 +121,12 @@
             text-align: center;
             color: #222;
         }
-
-        /* 弹窗关闭按钮：鸢尾花图标版 */
+        
         .modal-close {
             position: absolute;
             top: 15px;
             right: 20px;
+            height: 28px; 
             opacity: 0.6;        /* 平时稍微半透明，低调一点 */
             transition: opacity 0.2s ease, transform 0.2s ease;
             z-index: 1001;
@@ -195,7 +195,7 @@
     <!-- 弹窗容器 -->
     <div id="modalOverlay" class="modal-overlay" onclick="closeModalOutside(event)">
         <div class="modal-box">
-            <span class="modal-close" onclick="closeModal()">✖</span>
+            <img class="modal-close" src="iris.png" onclick="closeModal()" alt="关闭">
             <h2 id="modalTitle" style="transform: scaleX(0.8);">标题</h2>
             <p id="modalContent" style="transform: scaleX(0.8);">内容</p>
         </div>
