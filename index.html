@@ -122,17 +122,19 @@
             color: #222;
         }
 
+        /* 弹窗关闭按钮：鸢尾花图标版 */
         .modal-close {
             position: absolute;
             top: 15px;
             right: 20px;
-            font-size: 24px;
-            cursor: pointer;
-            color: #666;
-            transition: color 0.2s;
-            font-weight: bold;
+            opacity: 0.6;        /* 平时稍微半透明，低调一点 */
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 1001;
         }
-        .modal-close:hover { color: #000; }
+        .modal-close:hover {
+            opacity: 1;          /* 鼠标放上去立刻变得清晰 */
+            transform: scale(1.1); /* 轻微放大一点点，有反馈感 */
+        }
 
         .modal-box h2 { margin-top: 0; margin-bottom: 20px; letter-spacing: 4px; }
         .modal-box p { line-height: 1.8; color: #444; letter-spacing: 1px; }
