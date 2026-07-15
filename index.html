@@ -192,52 +192,6 @@
         </div>
     </div>
     
-        /* 手机竖屏专属适配 (不影响横屏) */
-        @media screen and (orientation: portrait) {
-
-            /* 1. 旋转背景与导航容器 90 度填满屏幕 */
-            body {
-                background-size: 100% auto;
-                background-position: center center;
-            }
-            
-            .star-map {
-                transform: rotate(-90deg) scale(1.2);
-                width: 100vh;
-                height: 100vw;
-                position: absolute;
-                top: 0;
-                left: 0;
-                transform-origin: center center;
-            }
-
-            /* 2. 旋转后的星星坐标微调 */
-            .star:nth-child(1) { top: 10%; left: 40%; }
-            .star:nth-child(2) { top: 75%; left: 80%; }
-            .star:nth-child(3) { top: 25%; left: 80%; }
-            .star:nth-child(4) { top: 75%; left: 30%; }
-
-            /* 3. 底部铭文区域独立固定，不参与旋转 */
-            .bottom-inscription {
-                position: fixed !important; 
-                bottom: 0 !important;
-                left: 0;
-                width: 100%;
-                transform: none !important;
-                padding: 8px 0;
-                background: rgba(255, 255, 255, 0.95);
-                border-top: 1px solid #ddd;
-                z-index: 999;
-                pointer-events: none;
-            }
-            
-            .bottom-inscription p {
-                font-size: 14px !important; 
-                line-height: 1.4 !important;
-                letter-spacing: 4px !important;
-            }
-        }
-    
     <!-- 弹窗容器 -->
     <div id="modalOverlay" class="modal-overlay" onclick="closeModalOutside(event)">
         <div class="modal-box">
