@@ -243,7 +243,7 @@
         /* .active 是 JS 给 overlay 加的"打开"标记 */
         .modal-overlay.active {
             display: flex;           /* 显示并触发居中布局 */
-            animation: fadeIn 0.2s ease;
+            animation: fadeIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
         }
 
         @keyframes fadeIn {
@@ -251,9 +251,10 @@
             to   { opacity: 1; }      /* 渐变到不透明 */
         }
 
-        /* 淡出动画：用于"大祈祷室"自动跳转前的3秒淡化效果 */
+        /* 淡出动画：用于"大祈祷室"自动跳转前的淡化效果
+           用 ease-in（先慢后快）让淡出更自然，不会一上来就猛地变透明 */
         .modal-overlay.fading-out {
-            animation: fadeOut 2s ease forwards;   /* 2秒淡出，forwards 保持终态 */
+            animation: fadeOut 2s cubic-bezier(0.4, 0, 0.68, 0.06) forwards;
         }
 
         @keyframes fadeOut {
@@ -261,7 +262,25 @@
             to   { opacity: 0; }      /* 渐变到透明（消失） */
         }
 
-        /* .modal-box：弹窗主体（白色圆角卡片） */
+        /* 弹窗主体配合淡入淡出：加一点缩放过渡，更优雅
+           （overlay 控制透明度，modal-box 控制缩放，两层叠加） */
+        .modal-box {
+            animation: boxPopIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+            transition: transform 2s cubic-bezier(0.4, 0, 0.68, 0.06);
+        }
+
+        @keyframes boxPopIn {
+            from { transform: scale(0.92); opacity: 0; }   /* 略小+透明开始 */
+            to   { transform: scale(1);    opacity: 1; }     /* 原始大小+不透明 */
+        }
+
+        /* 淡出时弹窗主体也微微缩小并上浮，配合透明度一起消失 */
+        .modal-overlay.fading-out .modal-box {
+            transform: scale(0.96) translateY(-10px);
+        }
+
+        /* .modal-box：弹窗主体（白色圆角卡片）
+           动画在上方 .modal-box 块统一定义（boxPopIn + 淡出缩放） */
         .modal-box {
             background: rgba(255, 255, 255, 0.95);    /* 接近不透明的白 */
             padding: clamp(20px, 4vw, 40px);           /* 内边距自适应 */
@@ -276,13 +295,6 @@
             position: relative;    /* 关闭按钮要相对它定位 */
             text-align: center;    /* 文字居中 */
             color: #222;
-            animation: scaleIn 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-            /* 弹出动画：0.25 秒，从 0.9 倍放大到 1.0 倍 */
-        }
-
-        @keyframes scaleIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to   { transform: scale(1);   opacity: 1; }
         }
 
         /* 关闭按钮（鸢尾花图标 iris.png） */
