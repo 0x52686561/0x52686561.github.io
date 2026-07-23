@@ -39,6 +39,35 @@
             display: inline-block;
         }
 
+        /* ===== 入场动画 =====
+           两种风格：
+           1. .fly-in     —— 页面整体淡入（标题、输入框、页脚）
+           2. .card-fly-in —— 留言卡片飞入（更大的位移 + 轻微缩放） */
+
+        /* 1. 淡入：从下方 20px 微微上浮 + 透明度变化 */
+        .fly-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease,
+                        transform 0.6s ease;
+        }
+        .fly-in.entered {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 2. 卡片飞入：从下方 60px 飞进来，带轻微缩放，更有"飞"的感觉 */
+        .card-fly-in {
+            opacity: 0;
+            transform: translateY(60px) scale(0.96);
+            transition: opacity 0.8s cubic-bezier(0.22, 0.61, 0.36, 1),
+                        transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+        .card-fly-in.entered {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
         /* ===== 页面整体容器：像一页展开的古老祷文卷轴 ===== */
         .page-wrapper {
             max-width: 720px;              /* 最大宽度，太宽不好读 */
@@ -533,13 +562,13 @@
         <a href="../index.html" class="back-home">« 返回</a>
 
         <!-- 页面标题 -->
-        <header class="page-header">
+        <header class="page-header fly-in">
             <h1><span class="scale-x">大祈祷室</span></h1>
             <div class="subtitle"><span class="scale-x">在此向帝皇倾诉，留下你的印记</span></div>
         </header>
 
         <!-- ===== 顶部发帖区 ===== -->
-        <div class="composer">
+        <div class="composer fly-in">
             <textarea placeholder="写下你的祷词..." id="mainInput"></textarea>
             <div class="composer-footer">
                 <span class="composer-hint">以帝皇之名发言</span>
@@ -555,15 +584,16 @@
         <div class="comment-list" id="commentList">
 
             <!-- Utterances 评论容器
+                 用 card-fly-in 类做"飞进来"效果
                  script 标签会自动在这里渲染评论框和评论列表 -->
-            <div id="utterances-container"></div>
+            <div id="utterances-container" class="card-fly-in"></div>
 
         </div>
 
         <!-- ===== 页脚铭文（和首页同格式横条）===== -->
-        <footer class="bottom-inscription">
+        <footer class="bottom-inscription fly-in">
             <p class="inscription-text">
-                <span class="scale-x">帝皇的圣光，与你同在。</span>
+                <span class="scale-x">“帝皇的圣光，与你同在。”</span>
             </p>
             <div class="signature">
                 <span class="scale-x">0x52686561</span>
@@ -640,11 +670,45 @@
             }
 
             // =====================================================
+            // 入场动画：让页面元素依次出现
+            //   1. 标题、输入框、页脚：淡入（.fly-in → 加 .entered）
+            //   2. 留言卡片：飞入（.card-fly-in → 加 .entered）
+            //   用 setTimeout 让它们错开时间，有"逐个登场"的感觉
+            // =====================================================
+
+            function initEntranceAnimations() {
+                // 标题：立即淡入
+                var header = document.querySelector('.page-header.fly-in');
+                if (header) {
+                    requestAnimationFrame(function () { header.classList.add('entered'); });
+                }
+
+                // 输入框：延迟 150ms 淡入
+                setTimeout(function () {
+                    var composer = document.querySelector('.composer.fly-in');
+                    if (composer) composer.classList.add('entered');
+                }, 150);
+
+                // 留言卡片：延迟 350ms 飞入（让标题和输入框先就位）
+                setTimeout(function () {
+                    var card = document.querySelector('.card-fly-in');
+                    if (card) card.classList.add('entered');
+                }, 350);
+
+                // 页脚：延迟 550ms 淡入（最后出现）
+                setTimeout(function () {
+                    var footer = document.querySelector('.bottom-inscription.fly-in');
+                    if (footer) footer.classList.add('entered');
+                }, 550);
+            }
+
+            // =====================================================
             // 页面加载完成后初始化
             // =====================================================
             document.addEventListener('DOMContentLoaded', function () {
                 initUtterances();
                 initSendButton();
+                initEntranceAnimations();
             });
 
         })();
