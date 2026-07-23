@@ -251,6 +251,16 @@
             to   { opacity: 1; }      /* 渐变到不透明 */
         }
 
+        /* 淡出动画：用于"大祈祷室"自动跳转前的3秒淡化效果 */
+        .modal-overlay.fading-out {
+            animation: fadeOut 2s ease forwards;   /* 2秒淡出，forwards 保持终态 */
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }     /* 从不透明开始 */
+            to   { opacity: 0; }      /* 渐变到透明（消失） */
+        }
+
         /* .modal-box：弹窗主体（白色圆角卡片） */
         .modal-box {
             background: rgba(255, 255, 255, 0.95);    /* 接近不透明的白 */
@@ -518,6 +528,10 @@
             const contentEl   = document.getElementById('modalContent');
             let lastTriggerEl  = null; // 记录"是哪个星星触发了弹窗"，关闭后好把焦点还给它
 
+            // 自动跳转计时器（用于"大祈祷室"的3秒淡化跳转）
+            // 存到这里是为了用户手动关闭时能取消跳转
+            let jumpTimers = [];
+
             /* 打开弹窗函数
                id = 'novel' / 'character' / 'faction' / 'guestbook' */
             function openModal(id) {
@@ -535,13 +549,32 @@
                 if (document.activeElement && document.activeElement.classList.contains('star')) {
                     lastTriggerEl = document.activeElement;
                 }
+
+                // ===== 特殊处理："大祈祷室"点击后3秒内淡化并自动跳转 =====
+                // 流程：打开弹窗 → 1秒后开始2秒淡出动画 → 3秒后跳转到留言页
+                if (id === 'guestbook') {
+                    // 1秒后给弹窗加上 .fading-out 类，触发2秒的淡出动画
+                    jumpTimers.push(setTimeout(function () {
+                        overlay.classList.add('fading-out');
+                    }, 1000));
+
+                    // 3秒后跳转到留言页（1秒等待 + 2秒淡出 = 3秒）
+                    jumpTimers.push(setTimeout(function () {
+                        window.location.href = 'pages/guestbook.html';
+                    }, 3000));
+                }
             }
             // 把函数挂到 window，这样 HTML 里的 onclick="openModal(...)" 才能调到
             window.openModal = openModal;
 
             /* 关闭弹窗函数 */
             function closeModal() {
+                // 如果用户手动关闭，取消所有未触发的自动跳转计时器
+                jumpTimers.forEach(function (t) { clearTimeout(t); });
+                jumpTimers = [];
+
                 overlay.classList.remove('active');    // 移除 .active，触发隐藏
+                overlay.classList.remove('fading-out'); // 移除淡出状态，下次打开是干净的
 
                 // 如果之前记录了触发元素，就把键盘焦点还给它（无障碍体验更好）
                 if (lastTriggerEl && typeof lastTriggerEl.focus === 'function') {
