@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     大祈祷室（留言页）
+     风格：黑白线稿 + 祷文卷轴 + 战锤40K神圣感
+     ============================================================ -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大祈祷室 | 神圣殉道录</title>
+
+    <!-- 预连接字体服务器，加速加载 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&display=swap">
+
+    <style>
+        /* ===== 全局重置 ===== */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;   /* 最小高度占满，内容多时可以撑开 */
+            background-color: #fafafa;
+            background-image: url('../bg.jpg');   /* 背景图和首页共用，../ 表示上一级目录 */
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            color: #111;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        /* 横向压缩工具类，和首页保持一致 */
+        .scale-x {
+            transform: scaleX(0.8);
+            transform-origin: center;
+            display: inline-block;
+        }
+
+        /* ===== 页面整体容器：像一页展开的古老祷文卷轴 ===== */
+        .page-wrapper {
+            max-width: 720px;              /* 最大宽度，太宽不好读 */
+            margin: 0 auto;                /* 水平居中 */
+            padding: 40px 24px 80px;       /* 上下左右内边距 */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ===== 页面标题 ===== */
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+            position: relative;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            letter-spacing: 10px;
+            margin: 0 0 10px;
+            font-weight: 700;
+        }
+
+        .page-header .subtitle {
+            font-size: 13px;
+            letter-spacing: 4px;
+            color: #666;
+        }
+
+        /* 标题两侧的装饰线（鸢尾花位置用横线替代，简洁） */
+        .page-header::before,
+        .page-header::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 60px;
+            height: 1px;
+            background: #333;
+        }
+        .page-header::before { left: 0; }
+        .page-header::after  { right: 0; }
+
+        /* 返回首页链接 */
+        .back-home {
+            position: absolute;
+            top: 20px;
+            left: 24px;
+            font-size: 13px;
+            letter-spacing: 2px;
+            color: #333;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .back-home:hover {
+            border-bottom-color: #333;
+        }
+
+        /* ===== 输入区：顶部固定，类似微博发帖框 ===== */
+        .composer {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #222;
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 30px;
+            position: sticky;      /* 滚动时贴在顶部 */
+            top: 16px;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .composer textarea {
+            width: 100%;
+            min-height: 80px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px 12px;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 15px;
+            line-height: 1.6;
+            resize: vertical;   /* 只允许垂直方向拖拽放大 */
+            outline: none;
+            transition: border-color 0.2s;
+            background: #fff;
+            color: #222;
+        }
+
+        .composer textarea:focus {
+            border-color: #111;
+        }
+
+        .composer-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .composer-hint {
+            font-size: 12px;
+            color: #999;
+            letter-spacing: 1px;
+        }
+
+        /* 发送按钮：用 iris.png 图标 */
+        .send-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 1px solid #222;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 14px;
+            letter-spacing: 3px;
+            color: #222;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover {
+            background: #111;
+            color: #fff;
+        }
+
+        .send-btn img {
+            height: 20px;
+            width: auto;
+        }
+
+        /* ===== 留言列表：时间线式，从新到旧 ===== */
+        .comment-list {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;       /* 每条留言之间的间距 */
+        }
+
+        /* 单条留言卡片 */
+        .comment-card {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid #222;
+            border-radius: 4px;
+            padding: 18px 20px;
+            position: relative;
+        }
+
+        /* 留言卡片顶部的装饰角（左上、右下，增加仪式感） */
+        .comment-card::before,
+        .comment-card::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border: 1px solid #333;
+        }
+        .comment-card::before {
+            top: 6px;
+            left: 6px;
+            border-right: none;
+            border-bottom: none;
+        }
+        .comment-card::after {
+            bottom: 6px;
+            right: 6px;
+            border-left: none;
+            border-top: none;
+        }
+
+        /* 留言头部：头像 + 用户名 + 时间 */
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid #333;
+            background: #eee;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%);   /* 头像转黑白，和整体风格统一 */
+        }
+
+        .comment-meta {
+            flex: 1;
+        }
+
+        .comment-author {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #111;
+            margin: 0 0 4px;
+        }
+
+        .comment-time {
+            font-size: 12px;
+            color: #888;
+            letter-spacing: 1px;
+        }
+
+        /* 留言正文 */
+        .comment-body {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #333;
+            margin: 0 0 12px;
+            white-space: pre-wrap;    /* 保留换行和空格 */
+            word-break: break-word;
+        }
+
+        /* 留言底部操作栏：点赞 + 回复 */
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
+
+        /* 点赞按钮：蜡烛图标 */
+        .like-btn,
+        .reply-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 13px;
+            letter-spacing: 2px;
+            color: #555;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .like-btn:hover,
+        .reply-btn:hover {
+            color: #111;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* 已点赞状态：蜡烛点亮的感觉 */
+        .like-btn.liked {
+            color: #111;
+            font-weight: 700;
+        }
+
+        .like-icon {
+            font-size: 18px;
+            transition: transform 0.2s;
+        }
+
+        .like-btn:hover .like-icon {
+            transform: scale(1.15);
+        }
+
+        .like-count {
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* ===== 回复区（主留言下的回复列表） ===== */
+        .reply-list {
+            margin-top: 14px;
+            padding-left: 16px;
+            border-left: 2px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .reply-item {
+            background: rgba(250, 250, 250, 0.7);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px 14px;
+            font-size: 14px;
+        }
+
+        .reply-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .reply-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid #999;
+            overflow: hidden;
+            background: #eee;
+        }
+
+        .reply-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%);
+        }
+
+        .reply-author {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #222;
+        }
+
+        .reply-time {
+            font-size: 11px;
+            color: #999;
+            margin-left: auto;
+        }
+
+        .reply-body {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #444;
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* 回复输入框：点击"回复"按钮后展开 */
+        .reply-composer {
+            display: none;    /* 默认隐藏 */
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+        }
+
+        .reply-composer.active {
+            display: block;   /* 展开时显示 */
+        }
+
+        .reply-composer textarea {
+            width: 100%;
+            min-height: 60px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px 10px;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            outline: none;
+            background: #fff;
+            color: #222;
+        }
+
+        .reply-composer textarea:focus {
+            border-color: #111;
+        }
+
+        .reply-composer-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .reply-cancel-btn,
+        .reply-send-btn {
+            padding: 5px 12px;
+            border: 1px solid #999;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: #555;
+            transition: all 0.2s;
+        }
+
+        .reply-cancel-btn:hover {
+            border-color: #111;
+            color: #111;
+        }
+
+        .reply-send-btn {
+            border-color: #111;
+            color: #111;
+        }
+
+        .reply-send-btn:hover {
+            background: #111;
+            color: #fff;
+        }
+
+        /* ===== 底部装饰：蜡烛 ===== */
+        .page-footer {
+            margin-top: 40px;
+            text-align: center;
+            padding: 30px 0;
+            border-top: 1px solid #333;
+        }
+
+        .candles {
+            font-size: 36px;
+            letter-spacing: 16px;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        .footer-inscription {
+            font-size: 12px;
+            letter-spacing: 4px;
+            color: #666;
+        }
+
+        /* ===== 响应式：移动端 ===== */
+        @media (max-width: 640px) {
+            .page-wrapper {
+                padding: 20px 14px 60px;
+            }
+            .page-header h1 {
+                font-size: 24px;
+                letter-spacing: 6px;
+            }
+            .page-header::before,
+            .page-header::after {
+                width: 30px;
+            }
+            .back-home {
+                top: 14px;
+                left: 14px;
+                font-size: 12px;
+            }
+            .composer {
+                padding: 12px;
+                top: 10px;
+            }
+            .comment-card {
+                padding: 14px 16px;
+            }
+            .candles {
+                font-size: 28px;
+                letter-spacing: 12px;
+            }
+        }
+
+        /* 尊重用户的减少动画偏好 */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 页面整体容器 -->
+    <div class="page-wrapper">
+
+        <!-- 返回首页 -->
+        <a href="../index.html" class="back-home">« 返回</a>
+
+        <!-- 页面标题 -->
+        <header class="page-header">
+            <h1><span class="scale-x">大祈祷室</span></h1>
+            <div class="subtitle"><span class="scale-x">在此向帝皇倾诉，留下你的印记</span></div>
+        </header>
+
+        <!-- ===== 顶部发帖区 ===== -->
+        <div class="composer">
+            <textarea placeholder="写下你的祷词..." id="mainInput"></textarea>
+            <div class="composer-footer">
+                <span class="composer-hint">以帝皇之名发言</span>
+                <button class="send-btn" id="sendBtn">
+                    <img src="../iris.png" alt="">
+                    <span class="scale-x">祈 祷</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== 留言列表（从新到旧） ===== -->
+        <div class="comment-list" id="commentList">
+
+            <!-- 示例留言 1：最新的放最上面 -->
+            <article class="comment-card">
+                <div class="comment-header">
+                    <div class="avatar">
+                        <img src="https://avatars.githubusercontent.com/u/0?v=4" alt="头像">
+                    </div>
+                    <div class="comment-meta">
+                        <p class="comment-author"><span class="scale-x">殉道者_001</span></p>
+                        <span class="comment-time">2026-07-24 14:30</span>
+                    </div>
+                </div>
+                <p class="comment-body">
+帝皇在上，愿圣光指引迷途者。
+今日诵读《圣典·卷三》，深感信仰之力。
+                </p>
+                <div class="comment-actions">
+                    <button class="like-btn" data-id="1">
+                        <span class="like-icon">🕯️</span>
+                        <span class="like-count">12</span>
+                    </button>
+                    <button class="reply-btn" data-id="1">
+                        <span>✒️</span>
+                        <span>回复</span>
+                    </button>
+                </div>
+
+                <!-- 回复列表 -->
+                <div class="reply-list">
+                    <div class="reply-item">
+                        <div class="reply-header">
+                            <div class="reply-avatar">
+                                <img src="https://avatars.githubusercontent.com/u/0?v=4" alt="头像">
+                            </div>
+                            <span class="reply-author">星际战士_阿斯塔特</span>
+                            <span class="reply-time">2小时前</span>
+                        </div>
+                        <p class="reply-body">愿帝皇保佑你，兄弟。</p>
+                    </div>
+                </div>
+
+                <!-- 回复输入框（默认隐藏） -->
+                <div class="reply-composer">
+                    <textarea placeholder="写下你的回复..."></textarea>
+                    <div class="reply-composer-actions">
+                        <button class="reply-cancel-btn">取消</button>
+                        <button class="reply-send-btn">回复</button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 示例留言 2 -->
+            <article class="comment-card">
+                <div class="comment-header">
+                    <div class="avatar">
+                        <img src="https://avatars.githubusercontent.com/u/0?v=4" alt="头像">
+                    </div>
+                    <div class="comment-meta">
+                        <p class="comment-author"><span class="scale-x">审判官_瓦尔多</span></p>
+                        <span class="comment-time">2026-07-23 09:15</span>
+                    </div>
+                </div>
+                <p class="comment-body">
+异端不可饶恕，变种不可姑息。
+吾辈之使命，乃净化星海。
+                </p>
+                <div class="comment-actions">
+                    <button class="like-btn" data-id="2">
+                        <span class="like-icon">🕯️</span>
+                        <span class="like-count">8</span>
+                    </button>
+                    <button class="reply-btn" data-id="2">
+                        <span>✒️</span>
+                        <span>回复</span>
+                    </button>
+                </div>
+                <div class="reply-list">
+                    <!-- 暂无回复 -->
+                </div>
+                <div class="reply-composer">
+                    <textarea placeholder="写下你的回复..."></textarea>
+                    <div class="reply-composer-actions">
+                        <button class="reply-cancel-btn">取消</button>
+                        <button class="reply-send-btn">回复</button>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+
+        <!-- ===== 页脚装饰 ===== -->
+        <footer class="page-footer">
+            <div class="candles">🕯️ 🕯️ 🕯️</div>
+            <div class="footer-inscription"><span class="scale-x">帝皇的圣光，与你同在</span></div>
+        </footer>
+
+    </div>
+
+    <!-- ===== JavaScript ===== -->
+    <script>
+        (function () {
+            'use strict';
+
+            // =====================================================
+            // 目前先用本地数据演示，后续接入 Utterances / GitHub Issues
+            // =====================================================
+
+            /* ---- 点赞功能 ----
+               用 localStorage 记录哪些留言被当前用户点过赞
+               这样同一个浏览器不会重复点赞 */
+
+            // 从本地存储读取已点赞的留言 id 列表
+            function getLikedIds() {
+                try {
+                    return JSON.parse(localStorage.getItem('guestbook_liked') || '[]');
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            // 保存已点赞列表到本地
+            function saveLikedIds(ids) {
+                localStorage.setItem('guestbook_liked', JSON.stringify(ids));
+            }
+
+            // 切换点赞状态
+            function toggleLike(btn) {
+                const id = btn.dataset.id;
+                const liked = getLikedIds();
+                const countEl = btn.querySelector('.like-count');
+                let count = parseInt(countEl.textContent, 10) || 0;
+                const isLiked = liked.includes(id);
+
+                if (isLiked) {
+                    // 取消点赞
+                    liked.splice(liked.indexOf(id), 1);
+                    count--;
+                    btn.classList.remove('liked');
+                } else {
+                    // 点赞
+                    liked.push(id);
+                    count++;
+                    btn.classList.add('liked');
+                }
+
+                countEl.textContent = count;
+                saveLikedIds(liked);
+            }
+
+            /* ---- 回复按钮：展开/收起回复输入框 ---- */
+            function toggleReplyComposer(btn) {
+                const card = btn.closest('.comment-card');
+                const composer = card.querySelector('.reply-composer');
+                composer.classList.toggle('active');
+
+                // 如果展开，自动聚焦输入框
+                if (composer.classList.contains('active')) {
+                    const textarea = composer.querySelector('textarea');
+                    textarea.focus();
+                }
+            }
+
+            // 取消回复
+            function cancelReply(cancelBtn) {
+                const composer = cancelBtn.closest('.reply-composer');
+                composer.classList.remove('active');
+            }
+
+            /* ---- 事件绑定 ---- */
+            document.addEventListener('DOMContentLoaded', function () {
+
+                // 点赞按钮
+                document.querySelectorAll('.like-btn').forEach(function (btn) {
+                    // 初始化：如果已点赞，加上 liked 样式
+                    const id = btn.dataset.id;
+                    if (getLikedIds().includes(id)) {
+                        btn.classList.add('liked');
+                    }
+
+                    btn.addEventListener('click', function () {
+                        toggleLike(btn);
+                    });
+                });
+
+                // 回复按钮
+                document.querySelectorAll('.reply-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        toggleReplyComposer(btn);
+                    });
+                });
+
+                // 取消回复按钮
+                document.querySelectorAll('.reply-cancel-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        cancelReply(btn);
+                    });
+                });
+
+                // 主输入框发送按钮（演示用：只弹提示）
+                const sendBtn = document.getElementById('sendBtn');
+                if (sendBtn) {
+                    sendBtn.addEventListener('click', function () {
+                        const input = document.getElementById('mainInput');
+                        const text = input.value.trim();
+                        if (!text) {
+                            alert('祷词不可为空。');
+                            return;
+                        }
+                        alert('（演示模式）你的祷词已记录：\n\n' + text + '\n\n接入 GitHub Issues 后可真正发布。');
+                        input.value = '';
+                    });
+                }
+
+                // 回复发送按钮（演示用）
+                document.querySelectorAll('.reply-send-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        const composer = btn.closest('.reply-composer');
+                        const textarea = composer.querySelector('textarea');
+                        const text = textarea.value.trim();
+                        if (!text) return;
+                        alert('（演示模式）回复已记录：\n\n' + text);
+                        textarea.value = '';
+                        composer.classList.remove('active');
+                    });
+                });
+            });
+
+        })();
+    </script>
+
+</body>
+</html>
