@@ -1,247 +1,564 @@
 <!DOCTYPE html>
+<!-- ============================================================
+     DOCTYPE 声明：告诉浏览器这是一个 HTML5 文档（必须放在第一行）
+     ============================================================ -->
 <html lang="zh-CN">
+<!-- lang="zh-CN" 表示本页主体语言是简体中文，对搜索引擎和读屏软件更友好 -->
+
 <head>
+    <!-- ===== head 区：放"看不见"的元信息和外部资源 ===== -->
+
     <meta charset="UTF-8">
+    <!-- 字符集设为 UTF-8，避免中文显示成乱码 -->
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- viewport：让页面在手机上不要被缩小显示，初始缩放为 1.0 -->
+
     <title>0x52686561 | 神圣殉道录</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500&display=swap">
+    <!-- 浏览器标签页上显示的标题 -->
+
+    <!-- 预连接 Google Fonts 服务器：让字体稍快加载（不用改） -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- 引入思源宋体，500=常规粗细，700=加粗 -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&display=swap">
+
     <style>
+        /* ============================================================
+           下面是 CSS（页面样式）部分
+           每条规则的格式：
+               选择器 { 属性: 值; }
+           选择器决定"给谁穿衣服"，属性决定"穿什么衣服"
+           ============================================================ */
+
+        /* ===== Reset：通配符 * 表示所有元素，重置浏览器默认内外边距，避免不同浏览器之间差异 ===== */
+        *, *::before, *::after { box-sizing: border-box; }
+        /* box-sizing: border-box 让 padding/border 不撑大元素总宽度，调起来更直观 */
+
         /* 彻底禁止 HTML 和 Body 滚动 */
         html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden; 
+            margin: 0;          /* 外边距清零 */
+            padding: 0;         /* 内边距清零 */
+            width: 100%;        /* 宽度占满 */
+            height: 100%;       /* 高度占满 */
+            overflow: hidden;   /* 隐藏溢出内容，禁用滚动条 */
         }
 
+        /* body：整个网页的"画布" */
         body {
-            height: 100vh;
-            background-color: #ffffff; 
-            background-image: url('bg.jpg');
-            background-size: cover; 
-            background-position: center center; 
-            background-attachment: fixed; 
-            color: #111111; /* 全局文字改为深黑色 */
-            font-family: 'Noto Serif SC', serif;     
+            height: 100vh;                              /* 100vh = 视口高度的 100% */
+            background-color: #ffffff;                  /* 背景色纯白（图片没加载出来时显示白） */
+            background-image: url('bg.jpg');             /* 背景图，文件需和 index.html 同目录 */
+            background-size: cover;                      /* cover = 图片缩放到完全覆盖背景区，可能裁切 */
+            background-position: center center;         /* 背景图居中对齐 */
+            background-attachment: fixed;                /* 背景固定不动，鼠标视差时仍由 JS 调整 background-position */
+            color: #111111;                              /* 全局默认文字颜色：深黑 */
+            font-family: 'Noto Serif SC', serif;         /* 主字体：思源宋体，找不到时回退到 serif（衬线体） */
             transition: background-position 0.1s ease-out;
+            /* 鼠标移动时背景位置变化用 0.1 秒平滑过渡，避免突兀 */
         }
 
-        /* 星星容器 */
+        /* ---------- 横向压缩工具类 ----------
+           原代码到处都写 transform: scaleX(0.8)，重复且难改。
+           现在统一抽出来，谁要用就加 class="scale-x"
+           要改压缩程度，只改这一处即可 */
+        .scale-x {
+            transform: scaleX(0.8);      /* 把元素横向压到 80% 宽，让字看起来更修长 */
+            transform-origin: center;     /* 缩放中心点在元素正中 */
+            display: inline-block;        /* inline-block 才能让 transform 生效 */
+        }
+
+        /* ============================================================
+           星星导航：四颗星星分布在背景图上作为导航按钮
+           ============================================================ */
+
         .star-map {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
+            position: relative;      /* relative 让里面的 .star 可以相对它绝对定位 */
+            width: 100vw;            /* 100vw = 视口宽度的 100% */
+            height: 100vh;           /* 占满整个视口高度 */
         }
 
-        /* 星星外层容器：只负责定位，不再承担 filter/background */
+        /* .star：星星外层容器，只负责"定位到屏幕哪个位置" */
         .star {
-            position: absolute;
-            width: 42px;
-            height: 42px;
-            cursor: pointer;
-            z-index: 10;
+            position: absolute;      /* 绝对定位：通过 top/left/right/bottom 精确放置 */
+            width: clamp(32px, 4.5vw, 48px);     /* clamp(最小, 推荐, 最大) 自适应尺寸 */
+            height: clamp(32px, 4.5vw, 48px);    /* 同上：在小屏 32px、大屏 48px 之间变化 */
+            cursor: pointer;         /* 鼠标放上去变手指，提示可点 */
+            z-index: 10;              /* 层级：比背景高，比弹窗低 */
+            -webkit-tap-highlight-color: transparent;  /* 手机点击时不要出现蓝色高亮 */
+            border: none;             /* 因为是 div，本来没边框，这里显式声明 */
+            background: transparent;
+            padding: 0;
         }
 
-        /* 星星图标：background-image + 动画 + hover 滤镜都放在这一层 */
+        /* .star-icon：真正显示星星图片的那一层
+           分层是因为：动画、滤镜都只作用于图标本身，
+           不会牵连到下方的文字标签 star-label */
         .star-icon {
-    width: 100%;
-    height: 100%;
-    background-image: url('star.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    animation: rotateTwinkle 6s infinite linear;
-    
-    /* 添加白色发光效果 */
-    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8)) 
-            drop-shadow(0 0 12px rgba(255, 255, 255, 0.5));
+            width: 100%;              /* 撑满父容器 .star */
+            height: 100%;
+            background-image: url('star.png');                /* 星星图片 */
+            background-size: contain;                          /* contain = 完整显示不被裁切 */
+            background-repeat: no-repeat;                     /* 不平铺 */
+            background-position: center;                      /* 居中 */
+
+            /* 过渡：让放大/反色过程平滑（0.4 秒，使用贝塞尔曲线，更自然）
+               注意：transition 只对 transform / filter 这两个属性生效 */
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+                        filter 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+            animation: rotateTwinkle 6s infinite linear;
+            /* 持续动画：名为 rotateTwinkle，6 秒一轮，无限循环，匀速(linear) */
+
+            will-change: transform, filter;
+            /* 性能提示：告诉浏览器这两个属性会变，提前优化（提升动画流畅度） */
+
+            /* 默认状态：白色发光，让黑色星星在深色背景区也能看见 */
+            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8))
+                    drop-shadow(0 0 12px rgba(255, 255, 255, 0.5));
+            /* drop-shadow = 投影，rgba 最后一个值 0.8 是透明度 0~1 */
         }
-       
+
+        /* @keyframes：定义动画的关键帧（每一阶段的样子）
+           名称必须和上面 animation: rotateTwinkle 一致 */
         @keyframes rotateTwinkle {
-            0% { transform: rotate(0deg) scale(0.9);opacity: 0.7; }
-            50% {transform: rotate(180deg) scale(1.1); opacity: 1; }
-            100% {transform: rotate(360deg) scale(0.9); opacity: 0.7; }
+            0%   { transform: rotate(0deg)   scale(0.9); opacity: 0.7; }
+            /* 开始：旋转 0°，缩小到 90%，半透明 0.7 */
+            50%  { transform: rotate(180deg) scale(1.1); opacity: 1;   }
+            /* 中段：转 180°，放大到 110%，完全不透明 */
+            100% { transform: rotate(360deg) scale(0.9); opacity: 0.7; }
+            /* 结束：转完一整圈 360°，回到 90% 大小和 0.7 透明度 */
         }
 
-        /* hover 时只对图标本身生效，不再影响子元素 star-label */
-        .star:hover .star-icon {
-            animation: none; 
-            transform: scale(1.25);
-            filter: brightness(0.2) contrast(1.5); 
+        /* ===== 悬停 / 键盘聚焦时的反色效果 =====
+           :hover = 鼠标悬停
+           :focus-visible = 用 Tab 键聚焦时（鼠标点击不算）
+           逗号表示两个状态共用同一段样式 */
+        .star:hover .star-icon,
+        .star:focus-visible .star-icon {
+            animation: none;         /* 停止旋转动画 */
+            transform: scale(1.25);   /* 放大到 125% */
+
+            /* ★★★ 这是"反色功能"的核心 ★★★
+               invert(1) 把图像颜色反转：黑→白，白→黑
+               这样无论背景是黑还是白，星星总能形成对比
+               下面的 drop-shadow 给反转后的星星加上投影，让它更显眼 */
+            filter: invert(1)
+                    drop-shadow(0 0 6px rgba(0, 0, 0, 0.6))
+                    drop-shadow(0 0 12px rgba(255, 255, 255, 0.5));
         }
 
-        .star:hover {
-            z-index: 20;
+        .star:hover,
+        .star:focus-visible {
+            z-index: 20;     /* 悬停时层级提到 20，盖住其他星星，防止被遮挡 */
+            outline: none;    /* 取消浏览器默认的焦点轮廓（已被上面的样式替代） */
         }
-        
+
+        /* .star-label：鼠标悬停时弹出的小标签（白底黑边文字） */
         .star-label {
-            position: absolute;
-            top: 45px;
-            left: 50%;
-            transform: translateX(-50%);
-            
-            background: #fff;   /* 纯白底色 */
-            color: #000;        /* 纯黑文字 */
-            border: 1px solid #000; /* 细细的黑边，让它能看清边界 */
-            padding: 10px 24px;
-            
-            font-size: 18px;
-            letter-spacing: 4px;
-            white-space: nowrap;
-            text-align: center;
-            pointer-events: none; /* 防止鼠标点中它 */
-            
-            opacity: 0;          /* 默认透明隐藏 */
-            transition: none;    /* 彻底关闭任何动画过渡 */
+            position: absolute;       /* 绝对定位在 .star 内 */
+            top: calc(100% + 8px);    /* 在星星下方，100% 是星星高度，+8px 留点空隙 */
+            left: 50%;                /* 水平方向先移到星星中线 */
+            transform: translateX(-50%) scaleX(0.8);
+            /* translateX(-50%) 把自己向左挪自身宽度的一半，实现真正居中
+               scaleX(0.8) 横向压缩，和主字体保持一致修长感 */
+            transform-origin: center;
+
+            background: #fff;        /* 纯白底 */
+            color: #000;             /* 纯黑字 */
+            border: 1px solid #000;   /* 1px 黑色边框 */
+            padding: 10px 24px;      /* 内边距：上下 10px、左右 24px */
+
+            font-size: clamp(13px, 1.6vw, 18px);   /* 字号自适应 */
+            letter-spacing: 4px;                   /* 字间距，让字看起来更"古典" */
+            white-space: nowrap;                   /* 文字不换行，一行显示 */
+            text-align: center;                    /* 居中 */
+            pointer-events: none;                  /* 鼠标事件穿透，不会挡住下面的星星 */
+
+            opacity: 0;                /* 默认完全透明（看不见） */
+            transition: opacity 0.2s ease;
+            /* 0.2 秒淡入淡出 */
         }
 
-        /* 鼠标放上去时：直接显示，不受 star-icon 滤镜影响 */
-        .star:hover .star-label {
-            opacity: 1;          /* 变成不透明，直接显示 */
+        /* 悬停 / 聚焦时：标签变可见 */
+        .star:hover .star-label,
+        .star:focus-visible .star-label {
+            opacity: 1;
         }
-        
-        /* 弹窗 (Modal) 样式 */
+
+        /* ============================================================
+           弹窗 (Modal)：点击星星后弹出的信息框
+           ============================================================ */
+
         .modal-overlay {
-            display: none; 
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.4); 
-            z-index: 1000;
+            /* 默认隐藏：用 display:none 完全不占空间 */
+            display: none;
+            position: fixed;         /* fixed = 相对浏览器窗口定位，不随滚动 */
+            inset: 0;                /* inset:0 等价于 top/right/bottom/left 全为 0，铺满屏幕 */
+            background: rgba(0, 0, 0, 0.4);    /* 半透明黑色遮罩，0.4 = 40% 不透明 */
+            z-index: 1000;           /* 层级最高，盖住所有内容 */
+
+            /* 用 flex 布局让里面的 .modal-box 水平垂直居中 */
             justify-content: center;
             align-items: center;
-            backdrop-filter: blur(2px); 
+
+            padding: 20px;           /* 弹窗距屏幕边缘至少留 20px */
+            backdrop-filter: blur(2px);          /* 背景模糊，现代浏览器支持 */
+            -webkit-backdrop-filter: blur(2px);  /* Safari 前缀 */
         }
 
+        /* .active 是 JS 给 overlay 加的"打开"标记 */
+        .modal-overlay.active {
+            display: flex;           /* 显示并触发居中布局 */
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }     /* 从透明开始 */
+            to   { opacity: 1; }      /* 渐变到不透明 */
+        }
+
+        /* .modal-box：弹窗主体（白色圆角卡片） */
         .modal-box {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 40px;
-            max-width: 600px;
-            width: 90%;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            position: relative;
-            text-align: center;
+            background: rgba(255, 255, 255, 0.95);    /* 接近不透明的白 */
+            padding: clamp(20px, 4vw, 40px);           /* 内边距自适应 */
+            max-width: 600px;       /* 最大宽度 600px，超过就不再变宽 */
+            width: 100%;            /* 宽度占满（但不超过 max-width） */
+            max-height: 80vh;       /* 最大高度 80% 视口，超过就出现滚动条 */
+            overflow-y: auto;       /* 内容太长时允许上下滚动 */
+            border-radius: 8px;     /* 圆角 8px */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            /* 阴影：向右 0、向下 10px、模糊 30px、黑色 30% 透明度 */
+
+            position: relative;    /* 关闭按钮要相对它定位 */
+            text-align: center;    /* 文字居中 */
             color: #222;
+            animation: scaleIn 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+            /* 弹出动画：0.25 秒，从 0.9 倍放大到 1.0 倍 */
         }
-        
+
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        /* 关闭按钮（鸢尾花图标 iris.png） */
         .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            height: 28px; 
-            opacity: 0.6;        /* 平时稍微半透明，低调一点 */
+            position: absolute;          /* 绝对定位在 .modal-box 内 */
+            top: 15px;                   /* 距顶部 15px */
+            right: 20px;                 /* 距右侧 20px */
+            height: 28px;                /* 图标高度 28px */
+            width: auto;                 /* 宽度按图片比例自动 */
+            cursor: pointer;             /* 鼠标变手指 */
+
+            opacity: 0.6;                /* 默认半透明低调显示 */
             transition: opacity 0.2s ease, transform 0.2s ease;
-            z-index: 1001;
-        }
-        .modal-close:hover {
-            opacity: 1;          /* 鼠标放上去立刻变得清晰 */
-            transform: scale(1.1); /* 轻微放大一点点，有反馈感 */
+            z-index: 1001;               /* 比弹窗本身高一层 */
+
+            border: none;                /* 按钮默认有边框，去掉 */
+            background: transparent;
+            padding: 0;
+            display: block;
         }
 
-        .modal-box h2 { margin-top: 0; margin-bottom: 20px; letter-spacing: 4px; }
-        .modal-box p { line-height: 1.8; color: #444; letter-spacing: 1px; }
+        .modal-close:hover,
+        .modal-close:focus-visible {
+            opacity: 1;                  /* 悬停时完全不透明 */
+            transform: scale(1.1);       /* 轻微放大 */
+            outline: none;
+        }
 
-        /* 底部铭文区域 */
+        .modal-close img {
+            height: 28px;
+            width: auto;
+            display: block;
+        }
+
+        /* 弹窗里的标题 h2 */
+        .modal-box h2 {
+            margin: 0 0 20px;            /* 上 0、下 20px、左右 0 */
+            letter-spacing: 4px;         /* 字间距 */
+            font-size: clamp(20px, 3vw, 28px);
+            font-weight: 700;            /* 加粗 */
+        }
+
+        /* 弹窗里的正文 p */
+        .modal-box p {
+            line-height: 1.8;           /* 行高 1.8 倍，更易读 */
+            color: #444;
+            letter-spacing: 1px;
+            margin: 0;
+            font-size: clamp(14px, 1.8vw, 16px);
+        }
+
+        /* ============================================================
+           底部铭文：屏幕底部的引言区
+           ============================================================ */
         .bottom-inscription {
-            position: absolute;
+            position: absolute;          /* 相对 body 定位 */
             bottom: 0;
             left: 0;
             width: 100%;
-            background: rgba(255, 255, 255, 0.85);
-            padding: 15px 0;
-            border-top: 1px solid #ddd;
+            background: rgba(255, 255, 255, 0.85);    /* 半透明白 */
+            padding: 15px 0;             /* 上下 15px、左右 0 */
+            border-top: 1px solid #ddd;  /* 顶部一条浅灰分割线 */
             text-align: center;
-            z-index: 5;
-            pointer-events: none;
+            z-index: 5;                  /* 层级比星星低，被弹窗盖住 */
+            pointer-events: none;        /* 不接收鼠标，避免挡住点击 */
+        }
+
+        .inscription-text {
+            font-size: clamp(14px, 2vw, 20px);
+            letter-spacing: 6px;
+            line-height: 1.5;
+            color: #222;
+            max-width: 700px;            /* 最宽 700px，太宽不好读 */
+            margin: 0 auto;              /* 水平居中 */
+            font-weight: bold;
+            padding: 0 16px;             /* 左右各留 16px，避免贴边 */
+        }
+
+        /* 署名分隔线 */
+        .signature {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid #ccc;
+            width: 60px;                 /* 只有 60px 宽，让线看起来像装饰 */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .signature span {
+            font-size: 10px;
+            color: #666;
+            letter-spacing: 2px;
+        }
+
+        /* ============================================================
+           响应式：在不同屏幕尺寸下的调整
+           @media (条件) { ... } 表示"满足条件时才生效"
+           ============================================================ */
+
+        /* 手机端（屏幕宽 ≤ 640px） */
+        @media (max-width: 640px) {
+            .star { width: 38px; height: 38px; }
+            .star-label {
+                padding: 6px 14px;
+                letter-spacing: 2px;
+                font-size: 12px;
+            }
+            .bottom-inscription { padding: 10px 0; }
+            .inscription-text { letter-spacing: 3px; }
+            .modal-box { padding: 24px 18px; }
+            .modal-close { top: 10px; right: 12px; }
+        }
+
+        /* 极窄屏（折叠屏 / 小手机，宽 ≤ 380px） */
+        @media (max-width: 380px) {
+            .star { width: 32px; height: 32px; }
+            .star-label { padding: 4px 10px; letter-spacing: 1px; }
+        }
+
+        /* 横屏且高度很矮的设备（如手机横放） */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .bottom-inscription { padding: 6px 0; }
+            .inscription-text { font-size: 12px; letter-spacing: 2px; }
+            .signature { margin-top: 2px; padding-top: 2px; }
+        }
+
+        /* 尊重用户系统设置：若用户开启了"减少动画"偏好，则关闭所有动画
+           这对前庭功能敏感的用户很重要 */
+        @media (prefers-reduced-motion: reduce) {
+            .star-icon,
+            .modal-overlay.active,
+            .modal-box,
+            .modal-close {
+                animation: none !important;       /* !important 强制覆盖前面的动画声明 */
+                transition: none !important;
+            }
+            body { transition: none; }
         }
     </style>
 </head>
+
 <body>
 
-    <!-- 首页背景星星导航 -->
-    <div class="star-map">
-        <!-- 星星1：小说 -->
-        <div class="star" style="top: 32%; left: 34%;" onclick="openModal('novel')">
-            <div class="star-icon"></div>
-            <div class="star-label" style="transform: scaleX(0.8);">圣典与手稿</div>
-        </div>
-        <!-- 星星2：角色 -->
-        <div class="star" style="top: 23%; right: 28%;" onclick="openModal('character')">
-            <div class="star-icon"></div>
-            <div class="star-label" style="transform: scaleX(0.8);">殉道者名录</div>
-        </div>
-        <!-- 星星3：势力 -->
-        <div class="star" style="bottom: 32%; left: 27%;" onclick="openModal('faction')">
-            <div class="star-icon"></div>
-            <div class="star-label" style="transform: scaleX(0.8);">帝国档案</div>
-        </div>
-        <!-- 星星4：留言 -->
-        <div class="star" style="bottom: 40%; right: 20%;" onclick="openModal('guestbook')">
-            <div class="star-icon"></div>
-            <div class="star-label" style="transform: scaleX(0.8);">大祈祷室</div>
-        </div>
-    </div>
+    <!-- ===== body 区：用户能看见的所有内容 ===== -->
 
-    <!-- 底部铭文区域 -->
-    <div class="bottom-inscription">
-        <p style="transform: scaleX(0.8); style=font-size: 20px; letter-spacing: 6px; line-height: 1.5; color: #222; max-width: 700px; margin: 0 auto; font-weight: bold;">
-            “帝皇的圣光指引着你，<br>翻阅此卷，见证殉道者的荣光。”
+    <!-- <main> 表示页面的主体内容（语义化标签，对搜索引擎和读屏友好） -->
+    <!-- .star-map 是四颗星星所在的画布 -->
+    <main class="star-map">
+
+        <!-- ===== 星星1：小说 =====
+              style 写在标签里叫"行内样式"，只对这一个元素生效
+              top: 32%   = 距离顶部 32% 视口高度
+              left: 34%  = 距离左侧 34% 视口宽度
+              onclick="openModal('novel')"  = 点击时调用 JS 的 openModal 函数，传入 'novel' 作为参数
+              tabindex="0"  = 让这个 div 可以用 Tab 键聚焦（默认 div 不可以）
+              role="button" = 告诉读屏软件：这相当于一个按钮
+              aria-label="..." = 读屏时会朗读的文字 -->
+        <div class="star" style="top: 32%; left: 34%;" onclick="openModal('novel')"
+             tabindex="0" role="button" aria-label="圣典与手稿">
+            <div class="star-icon"></div>                          <!-- 星星图片本身 -->
+            <div class="star-label">圣典与手稿</div>                 <!-- 鼠标悬停时弹出的小标签 -->
+        </div>
+
+        <!-- ===== 星星2：角色 =====
+              注意这里用 right 而非 left，从右侧计算位置 -->
+        <div class="star" style="top: 23%; right: 28%;" onclick="openModal('character')"
+             tabindex="0" role="button" aria-label="殉道者名录">
+            <div class="star-icon"></div>
+            <div class="star-label">殉道者名录</div>
+        </div>
+
+        <!-- ===== 星星3：势力 =====
+              用 bottom 从底部计算位置 -->
+        <div class="star" style="bottom: 32%; left: 27%;" onclick="openModal('faction')"
+             tabindex="0" role="button" aria-label="帝国档案">
+            <div class="star-icon"></div>
+            <div class="star-label">帝国档案</div>
+        </div>
+
+        <!-- ===== 星星4：留言 ===== -->
+        <div class="star" style="bottom: 40%; right: 20%;" onclick="openModal('guestbook')"
+             tabindex="0" role="button" aria-label="大祈祷室">
+            <div class="star-icon"></div>
+            <div class="star-label">大祈祷室</div>
+        </div>
+
+    </main>
+
+    <!-- ===== 底部铭文 =====
+          <footer> 表示页脚（语义化） -->
+    <footer class="bottom-inscription">
+        <!-- <p> 是段落标签 -->
+        <!-- 里面包一层 <span class="scale-x"> 是为了应用横向压缩效果 -->
+        <p class="inscription-text">
+            <span class="scale-x">“帝皇的圣光指引着你，<br>翻阅此卷，见证殉道者的荣光。”</span>
+            <!-- <br> 是换行符 -->
         </p>
-             <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #ccc; width: 60px; margin-left: auto; margin-right: auto;">
-            <span style="font-size: 10px; color: #666; letter-spacing: 2px;">
-                0x52686561
-            </span>
+        <div class="signature">
+            <span>0x52686561</span>
         </div>
-    </div>
+    </footer>
 
-    <!-- 弹窗容器 -->
+    <!-- ===== 弹窗 =====
+          onclick="closeModalOutside(event)" = 点击遮罩空白处也能关闭弹窗 -->
     <div id="modalOverlay" class="modal-overlay" onclick="closeModalOutside(event)">
-        <div class="modal-box">
-            <img class="modal-close" src="iris.png" onclick="closeModal()" alt="关闭">
-            <h2 id="modalTitle" style="transform: scaleX(0.8);">标题</h2>
-            <p id="modalContent" style="transform: scaleX(0.8);">内容</p>
+        <!-- role="dialog" 告诉读屏：这是一个对话框 -->
+        <!-- aria-modal="true" 表示打开时背景不可点击 -->
+        <!-- aria-labelledby 指向标题的 id，让读屏朗读标题 -->
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+
+            <!-- 关闭按钮用 <button> 而非 <div>，原生支持键盘和读屏 -->
+            <button type="button" class="modal-close" onclick="closeModal()" aria-label="关闭弹窗">
+                <img src="iris.png" alt="">
+                <!-- alt="" 表示这是装饰性图片，读屏不朗读 -->
+            </button>
+
+            <!-- id 是唯一标识，JS 通过 document.getElementById 找到它们来修改文字 -->
+            <h2 id="modalTitle"><span class="scale-x">标题</span></h2>
+            <p id="modalContent"><span class="scale-x">内容</span></p>
         </div>
     </div>
 
+    <!-- ===== JavaScript 区：让页面"动起来" =====
+          用 IIFE (function(){...})() 包起来，避免变量污染全局
+          'use strict' 开启严格模式，写错变量会报错提醒 -->
     <script>
-        const modalData = {
-            'novel': { title: '圣典与手稿', content: '此卷记载着黑暗纪元中，信仰与怒火交织的史诗篇章。' },
-            'character': { title: '殉道者名录', content: '帝皇忠仆，帝国英魂。每一位登场者的生平与影像皆铭刻于此。' },
-            'faction': { title: '帝国档案', content: '探秘古老星域中的势力更迭，以及那些隐于阴影中的盟约与叛变。' },
-            'guestbook': { title: '大祈祷室', content: '在此向帝皇倾诉，或留下属于你的印记。' }
-        };
+        (function () {
+            'use strict';
 
-        function openModal(id) {
-            const data = modalData[id];
-            if(data) {
-                document.getElementById('modalTitle').innerText = data.title;
-                document.getElementById('modalContent').innerText = data.content;
-                document.getElementById('modalOverlay').style.display = 'flex'; 
-                document.body.style.overflow = 'hidden'; 
+            /* ===== 弹窗内容数据 =====
+               这是一个对象（Object），四个 key 对应四颗星星
+               想改文案？只改这里就行，不用动 HTML */
+            const modalData = {
+                'novel':     { title: '圣典与手稿',   content: '此卷记载着黑暗纪元中，信仰与怒火交织的史诗篇章。' },
+                'character': { title: '殉道者名录',   content: '帝皇忠仆，帝国英魂。每一位登场者的生平与影像皆铭刻于此。' },
+                'faction':   { title: '帝国档案',     content: '探秘古老星域中的势力更迭，以及那些隐于阴影中的盟约与叛变。' },
+                'guestbook': { title: '大祈祷室',     content: '在此向帝皇倾诉，或留下属于你的印记。' }
+            };
+
+            // 通过 id 获取页面元素，存到变量里方便后续操作
+            const overlay      = document.getElementById('modalOverlay');
+            const titleEl     = document.getElementById('modalTitle');
+            const contentEl   = document.getElementById('modalContent');
+            let lastTriggerEl  = null; // 记录"是哪个星星触发了弹窗"，关闭后好把焦点还给它
+
+            /* 打开弹窗函数
+               id = 'novel' / 'character' / 'faction' / 'guestbook' */
+            function openModal(id) {
+                const data = modalData[id];      // 从数据表里取出对应内容
+                if (!data) return;              // 找不到就退出，不报错
+
+                // 找到 .scale-x 子元素并修改文字（注意不是直接改 titleEl，因为里面包了 span）
+                titleEl.querySelector('span.scale-x').textContent   = data.title;
+                contentEl.querySelector('span.scale-x').textContent = data.content;
+
+                // 给 overlay 加上 .active 类，触发 CSS 的 display:flex 显示弹窗
+                overlay.classList.add('active');
+
+                // 如果触发元素是星星，就记下来（关闭时还原焦点用）
+                if (document.activeElement && document.activeElement.classList.contains('star')) {
+                    lastTriggerEl = document.activeElement;
+                }
             }
-        }
+            // 把函数挂到 window，这样 HTML 里的 onclick="openModal(...)" 才能调到
+            window.openModal = openModal;
 
-        function closeModal() {
-            document.getElementById('modalOverlay').style.display = 'none';
-            document.body.style.overflow = 'hidden';
-        }
+            /* 关闭弹窗函数 */
+            function closeModal() {
+                overlay.classList.remove('active');    // 移除 .active，触发隐藏
 
-        function closeModalOutside(event) {
-            if (event.target === document.getElementById('modalOverlay')) {
-                closeModal();
+                // 如果之前记录了触发元素，就把键盘焦点还给它（无障碍体验更好）
+                if (lastTriggerEl && typeof lastTriggerEl.focus === 'function') {
+                    lastTriggerEl.focus();
+                    lastTriggerEl = null;
+                }
             }
-        }
+            window.closeModal = closeModal;
 
-        // 鼠标视差逻辑
-        document.addEventListener('mousemove', function(e) {
-            const x = (e.clientX / window.innerWidth - 0.5) * 2;
-            const y = (e.clientY / window.innerHeight - 0.5) * 2;
-            const moveX = x * 2; 
-            const moveY = y * 2;
-            document.body.style.backgroundPosition = `calc(50% + ${moveX}px) calc(50% + ${moveY}px)`;
-        });
+            /* 点击弹窗外的遮罩区时关闭弹窗
+               event.target 是用户实际点击的元素
+               如果点的是遮罩本身（而不是弹窗内部），就关闭 */
+            window.closeModalOutside = function (event) {
+                if (event.target === overlay) closeModal();
+            };
+
+            // 监听键盘按键：按 Esc 键关闭弹窗
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && overlay.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+
+            // 给每颗星星绑定键盘事件：按 Enter 或 空格键 等同于点击
+            document.querySelectorAll('.star').forEach(function (star) {
+                star.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();   // 阻止空格键滚动页面等默认行为
+                        star.click();         // 触发点击 = 调用 openModal
+                    }
+                });
+            });
+
+            /* ===== 鼠标视差效果 =====
+               原理：鼠标移动时，根据鼠标位置微调背景图位置，产生"背景跟着鼠标动"的视差感
+               但只在精确指针设备（鼠标/触控板）上启用，触屏不启用避免误触 */
+            if (window.matchMedia('(pointer: fine)').matches) {
+                document.addEventListener('mousemove', function (e) {
+                    // e.clientX / clientY = 鼠标相对视口左上角的坐标
+                    // 减去 0.5 让坐标范围从 [0,1] 变成 [-0.5, 0.5]，再乘 2 变成 [-1, 1]
+                    const x = (e.clientX / window.innerWidth  - 0.5) * 2;
+                    const y = (e.clientY / window.innerHeight - 0.5) * 2;
+
+                    // 移动幅度 = ±2px（数字越大，视差越夸张）
+                    document.body.style.backgroundPosition =
+                        'calc(50% + ' + (x * 2) + 'px) calc(50% + ' + (y * 2) + 'px)';
+                });
+            }
+        })();
     </script>
 
 </body>
