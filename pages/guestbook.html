@@ -148,30 +148,21 @@
             letter-spacing: 1px;
         }
 
-        /* 发送按钮：用 iris.png 图标 */
+        /* 发送按钮：只用 iris.png 图标，无边框无文字 */
         .send-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border: 1px solid #222;
-            border-radius: 4px;
-            background: #fff;
+            background: transparent;
+            border: none;
             cursor: pointer;
-            font-family: 'Noto Serif SC', serif;
-            font-size: 14px;
-            letter-spacing: 3px;
-            color: #222;
-            transition: all 0.2s;
+            padding: 4px;
+            transition: transform 0.2s;
         }
 
         .send-btn:hover {
-            background: #111;
-            color: #fff;
+            transform: scale(1.1);
         }
 
         .send-btn img {
-            height: 20px;
+            height: 32px;
             width: auto;
         }
 
@@ -185,7 +176,7 @@
 
         /* 单条留言卡片 */
         .comment-card {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.95);
             border: 1px solid #222;
             border-radius: 4px;
             padding: 18px 20px;
@@ -265,6 +256,9 @@
             margin: 0 0 12px;
             white-space: pre-wrap;    /* 保留换行和空格 */
             word-break: break-word;
+            transform: scaleX(0.85);           /* 横向压缩，细长感 */
+            transform-origin: left center;     /* 从左侧对齐 */
+            letter-spacing: 1px;
         }
 
         /* 留言底部操作栏：点赞 + 回复 */
@@ -307,7 +301,7 @@
         }
 
         .like-icon {
-            font-size: 18px;
+            font-size: 20px;
             transition: transform 0.2s;
         }
 
@@ -381,6 +375,9 @@
             margin: 0;
             white-space: pre-wrap;
             word-break: break-word;
+            transform: scaleX(0.85);           /* 横向压缩，和主留言保持一致 */
+            transform-origin: left center;
+            letter-spacing: 1px;
         }
 
         /* 回复输入框：点击"回复"按钮后展开 */
@@ -450,25 +447,38 @@
             color: #fff;
         }
 
-        /* ===== 底部装饰：蜡烛 ===== */
-        .page-footer {
+        /* ===== 底部铭文：和首页同格式横条 ===== */
+        .bottom-inscription {
             margin-top: 40px;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 15px 0;
+            border-top: 1px solid #ddd;
             text-align: center;
-            padding: 30px 0;
-            border-top: 1px solid #333;
         }
 
-        .candles {
-            font-size: 36px;
-            letter-spacing: 16px;
-            margin-bottom: 10px;
-            opacity: 0.8;
+        .inscription-text {
+            font-size: 18px;
+            letter-spacing: 6px;
+            line-height: 1.5;
+            color: #222;
+            margin: 0 auto;
+            font-weight: bold;
+            max-width: 700px;
         }
 
-        .footer-inscription {
-            font-size: 12px;
-            letter-spacing: 4px;
+        .signature {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid #ccc;
+            width: 60px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .signature span {
+            font-size: 10px;
             color: #666;
+            letter-spacing: 2px;
         }
 
         /* ===== 响应式：移动端 ===== */
@@ -496,9 +506,9 @@
             .comment-card {
                 padding: 14px 16px;
             }
-            .candles {
-                font-size: 28px;
-                letter-spacing: 12px;
+            .inscription-text {
+                font-size: 14px;
+                letter-spacing: 4px;
             }
         }
 
@@ -530,9 +540,8 @@
             <textarea placeholder="写下你的祷词..." id="mainInput"></textarea>
             <div class="composer-footer">
                 <span class="composer-hint">以帝皇之名发言</span>
-                <button class="send-btn" id="sendBtn">
-                    <img src="../iris.png" alt="">
-                    <span class="scale-x">祈 祷</span>
+                <button class="send-btn" id="sendBtn" title="祈祷">
+                    <img src="../iris.png" alt="祈祷">
                 </button>
             </div>
         </div>
@@ -557,12 +566,11 @@
                 </p>
                 <div class="comment-actions">
                     <button class="like-btn" data-id="1">
-                        <span class="like-icon">🕯️</span>
+                        <span class="like-icon">🕯︎</span>
                         <span class="like-count">12</span>
                     </button>
                     <button class="reply-btn" data-id="1">
-                        <span>✒️</span>
-                        <span>回复</span>
+                        <span>🗨︎</span>
                     </button>
                 </div>
 
@@ -607,12 +615,11 @@
                 </p>
                 <div class="comment-actions">
                     <button class="like-btn" data-id="2">
-                        <span class="like-icon">🕯️</span>
+                        <span class="like-icon">🕯︎</span>
                         <span class="like-count">8</span>
                     </button>
                     <button class="reply-btn" data-id="2">
-                        <span>✒️</span>
-                        <span>回复</span>
+                        <span>🗨︎</span>
                     </button>
                 </div>
                 <div class="reply-list">
@@ -629,10 +636,14 @@
 
         </div>
 
-        <!-- ===== 页脚装饰 ===== -->
-        <footer class="page-footer">
-            <div class="candles">🕯️ 🕯️ 🕯️</div>
-            <div class="footer-inscription"><span class="scale-x">帝皇的圣光，与你同在</span></div>
+        <!-- ===== 页脚铭文（和首页同格式横条）===== -->
+        <footer class="bottom-inscription">
+            <p class="inscription-text">
+                <span class="scale-x">“帝皇的圣光，与你同在。”</span>
+            </p>
+            <div class="signature">
+                <span class="scale-x">0x52686561</span>
+            </div>
         </footer>
 
     </div>
