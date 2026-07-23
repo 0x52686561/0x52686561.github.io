@@ -295,8 +295,7 @@
             border-top: 1px dashed #ccc;
         }
 
-        /* 点赞按钮：蜡烛图标 */
-        .like-btn,
+        /* 回复按钮（演示卡片用，Utterances 用自带样式） */
         .reply-btn {
             display: flex;
             align-items: center;
@@ -313,30 +312,9 @@
             transition: all 0.2s;
         }
 
-        .like-btn:hover,
         .reply-btn:hover {
             color: #111;
             background: rgba(0, 0, 0, 0.05);
-        }
-
-        /* 已点赞状态：蜡烛点亮的感觉 */
-        .like-btn.liked {
-            color: #111;
-            font-weight: 700;
-        }
-
-        .like-icon {
-            font-size: 20px;
-            transition: transform 0.2s;
-        }
-
-        .like-btn:hover .like-icon {
-            transform: scale(1.15);
-        }
-
-        .like-count {
-            min-width: 20px;
-            text-align: center;
         }
 
         /* ===== 回复区（主留言下的回复列表） ===== */
