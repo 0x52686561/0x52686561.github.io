@@ -79,74 +79,130 @@
             height: 100vh;           /* 占满整个视口高度 */
         }
 
-        /* .star：星星外层容器，只负责"定位到屏幕哪个位置" */
+        /* .star：星星外层容器，只负责"定位到屏幕哪个位置"
+           同时作为光晕和图标的共同父容器 */
         .star {
             position: absolute;      /* 绝对定位：通过 top/left/right/bottom 精确放置 */
-            width: clamp(32px, 4.5vw, 48px);     /* clamp(最小, 推荐, 最大) 自适应尺寸 */
-            height: clamp(32px, 4.5vw, 48px);    /* 同上：在小屏 32px、大屏 48px 之间变化 */
+            width: clamp(40px, 5.5vw, 60px);     /* 比星星图标大一圈，给光晕留出空间 */
+            height: clamp(40px, 5.5vw, 60px);
             cursor: pointer;         /* 鼠标放上去变手指，提示可点 */
             z-index: 10;              /* 层级：比背景高，比弹窗低 */
             -webkit-tap-highlight-color: transparent;  /* 手机点击时不要出现蓝色高亮 */
-            border: none;             /* 因为是 div，本来没边框，这里显式声明 */
+            border: none;
             background: transparent;
             padding: 0;
+
+            display: flex;            /* 用 flex 让内部的 star-icon 水平垂直居中 */
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ===== 外层光晕（呼吸效果） =====
+           用 ::before 伪元素做一个弥散的圆形光晕
+           这层是"星星发光"的主体，一眼就能看出来
+           box-shadow 做多层圆形发光，从内到外逐渐变淡 */
+        .star::before {
+            content: '';               /* 伪元素必须有 content 才会显示 */
+            position: absolute;
+            width: 60%;                /* 光晕大小是星星容器的 60% */
+            height: 60%;
+            border-radius: 50%;        /* 圆形 */
+            background: radial-gradient(circle,
+                rgba(255, 255, 255, 0.9) 0%,      /* 中心：亮白 */
+                rgba(255, 255, 255, 0.5) 30%,     /* 中圈：半透明白 */
+                rgba(255, 255, 255, 0.2) 60%,     /* 外圈：淡淡白 */
+                transparent 100%);                 /* 最外：透明消失 */
+
+            /* 呼吸动画：光晕忽大忽小、忽明忽暗 */
+            animation: haloBreath 3s ease-in-out infinite;
+
+            pointer-events: none;      /* 光晕不接收点击，不挡星星 */
+            z-index: 0;                /* 光晕在星星图标后面 */
+        }
+
+        /* 光晕呼吸动画关键帧
+           0% 和 100% 小而暗，50% 大而亮 */
+        @keyframes haloBreath {
+            0%   { transform: scale(0.85); opacity: 0.6; }
+            50%  { transform: scale(1.2);  opacity: 1;   }
+            100% { transform: scale(0.85); opacity: 0.6; }
         }
 
         /* .star-icon：真正显示星星图片的那一层
-           分层是因为：动画、滤镜都只作用于图标本身，
-           不会牵连到下方的文字标签 star-label */
+           放在光晕之上（z-index: 1） */
         .star-icon {
-            width: 100%;              /* 撑满父容器 .star */
-            height: 100%;
+            width: 70%;               /* 星星图标占容器的 70%，周围留出光晕空间 */
+            height: 70%;
             background-image: url('star.png');                /* 星星图片 */
             background-size: contain;                          /* contain = 完整显示不被裁切 */
             background-repeat: no-repeat;                     /* 不平铺 */
             background-position: center;                      /* 居中 */
+            position: relative;       /* 让 z-index 生效 */
+            z-index: 1;               /* 星星在光晕之上 */
 
-            /* 过渡：让放大/反色过程平滑（0.4 秒，使用贝塞尔曲线，更自然）
-               注意：transition 只对 transform / filter 这两个属性生效 */
+            /* 过渡：让放大/反色过程平滑（0.4 秒，使用贝塞尔曲线，更自然） */
             transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
                         filter 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 
+            /* 旋转动画：星星自己转 */
             animation: rotateTwinkle 6s infinite linear;
-            /* 持续动画：名为 rotateTwinkle，6 秒一轮，无限循环，匀速(linear) */
 
             will-change: transform, filter;
             /* 性能提示：告诉浏览器这两个属性会变，提前优化（提升动画流畅度） */
 
-            /* 默认状态：白色发光，让黑色星星在深色背景区也能看见 */
-            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8))
-                    drop-shadow(0 0 12px rgba(255, 255, 255, 0.5));
-            /* drop-shadow = 投影，rgba 最后一个值 0.8 是透明度 0~1 */
+            /* ★★★ 星星本身的发光（紧贴星星边缘的强光）★★★
+               用三层 drop-shadow 叠加：
+               第 1 层：紧贴星星的强光（小范围高不透明度）
+               第 2 层：中等范围的柔光
+               第 3 层：大范围的弥散光
+               三层叠加起来就是从星星向外逐渐扩散的发光效果 */
+            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 1))
+                    drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))
+                    drop-shadow(0 0 16px rgba(255, 255, 255, 0.4));
         }
 
-        /* @keyframes：定义动画的关键帧（每一阶段的样子）
+        /* @keyframes：星星旋转 + 缩放呼吸
            名称必须和上面 animation: rotateTwinkle 一致 */
         @keyframes rotateTwinkle {
-            0%   { transform: rotate(0deg)   scale(0.9); opacity: 0.7; }
-            /* 开始：旋转 0°，缩小到 90%，半透明 0.7 */
-            50%  { transform: rotate(180deg) scale(1.1); opacity: 1;   }
-            /* 中段：转 180°，放大到 110%，完全不透明 */
-            100% { transform: rotate(360deg) scale(0.9); opacity: 0.7; }
-            /* 结束：转完一整圈 360°，回到 90% 大小和 0.7 透明度 */
+            0%   { transform: rotate(0deg)   scale(0.9); }
+            /* 开始：旋转 0°，缩小到 90% */
+            50%  { transform: rotate(180deg) scale(1.05); }
+            /* 中段：转 180°，稍微放大一点 */
+            100% { transform: rotate(360deg) scale(0.9); }
+            /* 结束：转完一整圈 360°，回到 90% 大小 */
         }
 
-        /* ===== 悬停 / 键盘聚焦时的反色效果 =====
+        /* ===== 悬停 / 键盘聚焦：反色 + 放大 + 更强光晕 =====
            :hover = 鼠标悬停
            :focus-visible = 用 Tab 键聚焦时（鼠标点击不算）
            逗号表示两个状态共用同一段样式 */
         .star:hover .star-icon,
         .star:focus-visible .star-icon {
             animation: none;         /* 停止旋转动画 */
-            transform: scale(1.25);   /* 放大到 125% */
+            transform: scale(1.3);    /* 放大到 130%（比之前 1.25 更明显） */
 
-            /* ★★★ 这是"反色功能"的核心 ★★★
-               invert(1) 把图像颜色反转：黑→白，白→黑
-               这样无论背景是黑还是白，星星总能形成对比
-               下面的 drop-shadow 给反转后的星星加上投影，让它更显眼 */
+            /* ★★★ 反色功能的核心 ★★★
+               invert(1)：把星星图片颜色完全反转（黑→白，白→黑）
+               后面的多层 drop-shadow 给反色后的星星加上深色发光，
+               这样反色后的星星在任何背景上都清晰可见 */
             filter: invert(1)
-                    drop-shadow(0 0 6px rgba(0, 0, 0, 0.6))
-                    drop-shadow(0 0 12px rgba(255, 255, 255, 0.5));
+                    drop-shadow(0 0 3px rgba(0, 0, 0, 1))
+                    drop-shadow(0 0 8px rgba(0, 0, 0, 0.8))
+                    drop-shadow(0 0 16px rgba(0, 0, 0, 0.4))
+                    drop-shadow(0 0 28px rgba(255, 255, 255, 0.3));
+        }
+
+        /* 悬停时外层光晕也加强：更大更亮 */
+        .star:hover::before,
+        .star:focus-visible::before {
+            animation: none;          /* 停止呼吸动画 */
+            transform: scale(1.8);    /* 放大到 1.8 倍 */
+            opacity: 0.9;             /* 更亮 */
+            background: radial-gradient(circle,
+                rgba(255, 255, 255, 1) 0%,
+                rgba(255, 255, 255, 0.7) 30%,
+                rgba(255, 255, 255, 0.3) 60%,
+                transparent 100%);
         }
 
         .star:hover,
@@ -155,15 +211,18 @@
             outline: none;    /* 取消浏览器默认的焦点轮廓（已被上面的样式替代） */
         }
 
-        /* .star-label：鼠标悬停时弹出的小标签（白底黑边文字） */
+        /* .star-label：鼠标悬停时弹出的小标签（白底黑边文字）
+           标签是 star 的直接子元素，所以 top: 100% 是相对于整个 .star 容器
+           因为容器比实际星星图标大（留出了光晕空间），所以要往下多挪一点 */
         .star-label {
             position: absolute;       /* 绝对定位在 .star 内 */
-            top: calc(100% + 8px);    /* 在星星下方，100% 是星星高度，+8px 留点空隙 */
+            top: calc(100% + 4px);    /* 在整个 star 容器下方 +4px */
             left: 50%;                /* 水平方向先移到星星中线 */
             transform: translateX(-50%) scaleX(0.8);
             /* translateX(-50%) 把自己向左挪自身宽度的一半，实现真正居中
                scaleX(0.8) 横向压缩，和主字体保持一致修长感 */
             transform-origin: center;
+            z-index: 5;               /* 标签在星星之上、弹窗之下 */
 
             background: #fff;        /* 纯白底 */
             color: #000;             /* 纯黑字 */
@@ -342,7 +401,7 @@
 
         /* 手机端（屏幕宽 ≤ 640px） */
         @media (max-width: 640px) {
-            .star { width: 38px; height: 38px; }
+            .star { width: 48px; height: 48px; }     /* 星星容器稍大，给光晕留空间 */
             .star-label {
                 padding: 6px 14px;
                 letter-spacing: 2px;
@@ -356,7 +415,7 @@
 
         /* 极窄屏（折叠屏 / 小手机，宽 ≤ 380px） */
         @media (max-width: 380px) {
-            .star { width: 32px; height: 32px; }
+            .star { width: 40px; height: 40px; }
             .star-label { padding: 4px 10px; letter-spacing: 1px; }
         }
 
