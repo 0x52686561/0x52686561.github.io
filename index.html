@@ -172,7 +172,9 @@
             /* 结束：转完一整圈 360°，回到缩小状态 */
         }
 
-        /* ===== 悬停 / 键盘聚焦：星星反色变白 + 去掉光晕 + 整体放大 ===== */
+        /* ===== 悬停 / 键盘聚焦：整体放大 + 去掉光晕 =====
+           无论背景深浅，悬停时整体都放大、光晕都消失
+           星星颜色由 JS 根据背景深浅加的类来决定（见下方 light-bg / dark-bg） */
         .star:hover,
         .star:focus-visible {
             transform: scale(1.15);   /* 整体放大到 115% */
@@ -180,20 +182,31 @@
             outline: none;               /* 取消浏览器默认的焦点轮廓 */
         }
 
-        /* 悬停时星星反色：黑 → 白 */
-        .star:hover .star-icon,
-        .star:focus-visible .star-icon {
-            filter: invert(1)            /* 颜色反转：黑变白 */
-                    drop-shadow(0 0 4px rgba(255, 255, 255, 0.8))
-                    drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-            /* 反色后的白星加白色发光，让它在深色背景上也很亮 */
-        }
-
-        /* 悬停时光晕消失（淡出透明） */
+        /* 悬停时光晕消失（淡出透明）—— 所有星星都一样 */
         .star:hover::before,
         .star:focus-visible::before {
             opacity: 0;
             animation: none;   /* 同时停止呼吸动画 */
+        }
+
+        /* ===== 悬停星星颜色：根据背景深浅自动选择 =====
+           JS 会给每颗星星加 light-bg 或 dark-bg 类
+           - light-bg：背景是白色/浅色 → 悬停星星保持黑色（反色了反而看不见）
+           - dark-bg：背景是黑色/深色 → 悬停星星反色成白色（醒目） */
+
+        /* 背景是浅色（白）时：悬停星星保持黑色，加一点点黑色发光让轮廓更清晰 */
+        .star.light-bg:hover .star-icon,
+        .star.light-bg:focus-visible .star-icon {
+            filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.8))
+                    drop-shadow(0 0 8px rgba(0, 0, 0, 0.4));
+        }
+
+        /* 背景是深色（黑）时：悬停星星反色变白，加白色发光 */
+        .star.dark-bg:hover .star-icon,
+        .star.dark-bg:focus-visible .star-icon {
+            filter: invert(1)            /* 颜色反转：黑变白 */
+                    drop-shadow(0 0 4px rgba(255, 255, 255, 0.8))
+                    drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
         }
 
         /* .star-label：鼠标悬停时弹出的小标签（白底黑边文字）
@@ -586,6 +599,152 @@
                     }
                 });
             });
+
+            /* ===== 背景色智能识别 =====
+               原理：把背景图画到一个隐藏的 Canvas 上，
+               然后读取每颗星星中心位置的像素颜色，
+               计算亮度，判断是深色背景还是浅色背景，
+               给星星加上 light-bg 或 dark-bg 类，
+               这样 CSS 就能根据背景深浅用不同的悬停颜色 */
+
+            const BG_IMAGE_URL = 'bg.jpg';   // 背景图路径，和 body 的 background-image 一致
+            const BRIGHTNESS_THRESHOLD = 128; // 亮度阈值：0~255，低于它算深色，高于它算浅色
+            let bgImage = null;              // 缓存加载好的背景图
+            let bgCanvas = null;             // 缓存 canvas 元素
+
+            /* 加载背景图 */
+            function loadBackgroundImage() {
+                return new Promise(function (resolve, reject) {
+                    const img = new Image();
+                    img.onload = function () { resolve(img); };
+                    img.onerror = function () { reject(new Error('背景图加载失败')); };
+                    img.src = BG_IMAGE_URL;
+                });
+            }
+
+            /* 计算"cover"模式下图片在画布上的绘制位置和尺寸
+               background-size: cover 的意思是：图片等比缩放，
+               短边填满容器，长边可能被裁掉 */
+            function getCoverDrawParams(imgW, imgH, canvasW, canvasH) {
+                const imgRatio = imgW / imgH;          // 图片宽高比
+                const canvasRatio = canvasW / canvasH; // 画布宽高比
+                let drawW, drawH, drawX, drawY;
+
+                if (imgRatio > canvasRatio) {
+                    // 图片比画布"更宽" → 以高度为准，宽度超出两边被裁
+                    drawH = canvasH;
+                    drawW = canvasH * imgRatio;
+                    drawX = (canvasW - drawW) / 2;   // 水平居中
+                    drawY = 0;
+                } else {
+                    // 图片比画布"更高" → 以宽度为准，高度超出上下被裁
+                    drawW = canvasW;
+                    drawH = canvasW / imgRatio;
+                    drawX = 0;
+                    drawY = (canvasH - drawH) / 2;   // 垂直居中
+                }
+                return { drawX: drawX, drawY: drawY, drawW: drawW, drawH: drawH };
+            }
+
+            /* 获取指定坐标处的像素亮度（0~255）
+               用加权平均计算相对亮度：人眼对绿色最敏感，蓝色最不敏感 */
+            function getPixelBrightness(ctx, x, y) {
+                // 取一个 5x5 的小区域取平均值，避免单点噪点影响判断
+                const sampleSize = 5;
+                const half = Math.floor(sampleSize / 2);
+                let totalR = 0, totalG = 0, totalB = 0, count = 0;
+
+                for (let dy = -half; dy <= half; dy++) {
+                    for (let dx = -half; dx <= half; dx++) {
+                        const pixel = ctx.getImageData(x + dx, y + dy, 1, 1).data;
+                        totalR += pixel[0];
+                        totalG += pixel[1];
+                        totalB += pixel[2];
+                        count++;
+                    }
+                }
+
+                const r = totalR / count;
+                const g = totalG / count;
+                const b = totalB / count;
+
+                // 亮度计算公式（加权平均）
+                return 0.299 * r + 0.587 * g + 0.114 * b;
+            }
+
+            /* 主函数：分析每颗星星下方的背景亮度，加对应类名 */
+            function analyzeStarBackgrounds() {
+                if (!bgImage || !bgCanvas) return;
+
+                const ctx = bgCanvas.getContext('2d', { willReadFrequently: true });
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+
+                // 调整 canvas 尺寸到当前窗口大小
+                bgCanvas.width = w;
+                bgCanvas.height = h;
+
+                // 以 cover 模式把背景图画到 canvas 上
+                const params = getCoverDrawParams(
+                    bgImage.naturalWidth,
+                    bgImage.naturalHeight,
+                    w, h
+                );
+                ctx.drawImage(bgImage, params.drawX, params.drawY, params.drawW, params.drawH);
+
+                // 遍历每颗星星，取中心点的颜色
+                const stars = document.querySelectorAll('.star');
+                stars.forEach(function (star) {
+                    // 拿到星星在视口中的位置和尺寸
+                    const rect = star.getBoundingClientRect();
+                    const centerX = Math.round(rect.left + rect.width / 2);
+                    const centerY = Math.round(rect.top + rect.height / 2);
+
+                    // 边界保护：确保坐标在 canvas 范围内
+                    if (centerX < 0 || centerX >= w || centerY < 0 || centerY >= h) return;
+
+                    const brightness = getPixelBrightness(ctx, centerX, centerY);
+
+                    // 先移除可能存在的旧类名
+                    star.classList.remove('light-bg', 'dark-bg');
+
+                    // 加新类名
+                    if (brightness >= BRIGHTNESS_THRESHOLD) {
+                        star.classList.add('light-bg');   // 背景亮 → 浅背景类
+                    } else {
+                        star.classList.add('dark-bg');    // 背景暗 → 深背景类
+                    }
+                });
+            }
+
+            /* 初始化：等背景图加载完，再分析每颗星星的背景 */
+            function initBackgroundDetection() {
+                // 创建一个隐藏的 canvas，用来分析像素
+                bgCanvas = document.createElement('canvas');
+                bgCanvas.style.display = 'none';
+                document.body.appendChild(bgCanvas);
+
+                loadBackgroundImage().then(function (img) {
+                    bgImage = img;
+                    analyzeStarBackgrounds();  // 首次分析
+
+                    // 窗口大小改变时重新分析（因为背景图位置变了）
+                    let resizeTimer = null;
+                    window.addEventListener('resize', function () {
+                        clearTimeout(resizeTimer);
+                        resizeTimer = setTimeout(analyzeStarBackgrounds, 150);
+                    });
+                }).catch(function (err) {
+                    // 加载失败就默认所有星星都是深背景（保守策略，白星在黑底上显眼）
+                    console.warn('背景色识别失败，使用默认样式:', err.message);
+                    document.querySelectorAll('.star').forEach(function (star) {
+                        star.classList.add('dark-bg');
+                    });
+                });
+            }
+
+            // 启动背景色识别
+            initBackgroundDetection();
 
             /* ===== 鼠标视差效果 =====
                原理：鼠标移动时，根据鼠标位置微调背景图位置，产生"背景跟着鼠标动"的视差感
