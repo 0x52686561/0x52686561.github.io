@@ -23,11 +23,7 @@
             padding: 0;
             width: 100%;
             min-height: 100vh;   /* 最小高度占满，内容多时可以撑开 */
-            background-color: #fafafa;
-            background-image: url('../bg.jpg');   /* 背景图和首页共用，../ 表示上一级目录 */
-            background-size: cover;
-            background-position: center center;
-            background-attachment: fixed;
+            background-color: #ffffff;   /* 纯白背景 */
             color: #111;
             font-family: 'Noto Serif SC', serif;
         }
@@ -94,14 +90,14 @@
         /* 装饰元素通用样式：图片 + 文字都用这个 */
         .deco-item {
             position: absolute;
-            opacity: 0.15;             /* 默认很淡，不抢主内容视线 */
-            transition: opacity 0.3s;
+            opacity: 1;                 /* 完全不透明 */
         }
 
         /* 纯洁印记图片 */
         .deco-seal {
             max-width: 100%;
             height: auto;
+            max-height: 180px;          /* 限制最大高度，约为页尾卡片高度的 1.5 倍 */
         }
 
         /* 竖排经文文字 */
@@ -278,37 +274,23 @@
         }
 
         /* 单条留言卡片
-           使用 comment-bg.png 作为背景，叠加半透明白色遮罩保证文字可读 */
+           完全使用 comment-bg.png 作为背景，不添加任何额外边框 */
         .comment-card {
-            background-color: rgba(255, 255, 255, 0.92);   /* 备用底色 */
             background-image: url('comment-bg.png');
-            background-size: cover;            /* 背景图拉伸铺满 */
+            background-size: 100% 100%;        /* 背景图完全贴合卡片尺寸 */
             background-position: center;
             background-repeat: no-repeat;
-            border: 1px solid #222;
-            border-radius: 4px;
             padding: 18px 20px;
             position: relative;
-            overflow: hidden;                 /* 让 ::before 遮罩不溢出圆角 */
         }
 
-        /* 半透明白色遮罩层：盖在背景图上方、文字下方，保护可读性 */
-        .comment-card .bg-overlay {
-            position: absolute;
-            inset: 0;                        /* 撑满整个卡片 */
-            background: rgba(255, 255, 255, 0.75);
-            z-index: 0;                       /* 在背景图之上 */
-            pointer-events: none;             /* 不阻挡点击 */
-        }
-
-        /* 卡片内的实际内容（header/body/actions）都要在遮罩之上 */
+        /* 卡片内的实际内容（header/body/actions） */
         .comment-header,
         .comment-body,
         .comment-actions,
         .reply-list,
         .reply-composer {
             position: relative;
-            z-index: 1;
         }
 
         /* 加载中提示 */
@@ -321,28 +303,6 @@
             background: rgba(255, 255, 255, 0.85);
             border: 1px solid #222;
             border-radius: 4px;
-        }
-
-        /* 留言卡片顶部的装饰角（左上、右下，增加仪式感） */
-        .comment-card::before,
-        .comment-card::after {
-            content: '';
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            border: 1px solid #333;
-        }
-        .comment-card::before {
-            top: 6px;
-            left: 6px;
-            border-right: none;
-            border-bottom: none;
-        }
-        .comment-card::after {
-            bottom: 6px;
-            right: 6px;
-            border-left: none;
-            border-top: none;
         }
 
         /* 留言头部：头像 + 用户名 + 时间 */
@@ -438,24 +398,20 @@
             background: rgba(0, 0, 0, 0.05);
         }
 
-        /* 点赞按钮：蜡烛图标
-           点击会跳转到 GitHub 该评论页面让用户登录后点赞
-           （前端无法安全存储 token，所以用跳转方式） */
+        /* 阅览次数：蜡烛图标
+           根据评论创建时间自动计算，越老的评论数字越大 */
         .like-btn {
             display: flex;
             align-items: center;
             gap: 6px;
             background: transparent;
             border: none;
-            cursor: pointer;
             font-family: 'Noto Serif SC', serif;
             font-size: 13px;
             letter-spacing: 2px;
             color: #555;
             padding: 4px 8px;
             border-radius: 4px;
-            transition: all 0.2s;
-            text-decoration: none;   /* 用 <a> 标签时去掉下划线 */
         }
 
         .like-btn:hover {
@@ -892,6 +848,23 @@
                 return formatTime(isoTime);   // 超过30天显示绝对时间
             }
 
+            /* 计算阅览次数：根据评论创建时间自动生成
+               公式：基础数(100) + 时间加成(每小时+2) + 随机波动(±50)
+               越老的评论数字越大，模拟真实阅览增长 */
+            function calculateViews(createdAt) {
+                if (!createdAt) return 0;
+                var now = Date.now();
+                var then = new Date(createdAt).getTime();
+                if (isNaN(then)) return 100;
+
+                var hoursOld = (now - then) / 1000 / 60 / 60;   // 评论发布了多少小时
+                var base = 100;                                // 基础阅览数
+                var timeBonus = Math.floor(hoursOld * 2);      // 时间加成：每小时 +2
+                var variance = Math.floor(Math.random() * 50); // 随机波动：0~49
+
+                return base + timeBonus + variance;
+            }
+
             // =====================================================
             // 调用 GitHub API 获取评论
             // =====================================================
@@ -918,12 +891,11 @@
                 var body       = comment.body || '';
                 var time       = comment.created_at;
                 var htmlUrl    = comment.html_url;          // 该评论的 GitHub 页面地址
-                var likes      = (comment.reactions && comment.reactions['+1']) || 0;   // 👍 数量
+                var views      = calculateViews(time);      // 阅览次数（根据时间计算）
 
                 // 卡片 HTML 模板
                 return ''
                     + '<article class="comment-card card-fly-in" style="transition-delay:' + (index * 60) + 'ms;">'
-                    +   '<div class="bg-overlay"></div>'   // 背景图上方的白色遮罩
 
                     //   头部：头像 + 用户名 + 时间
                     +   '<div class="comment-header">'
@@ -941,12 +913,12 @@
                     //   正文
                     +   '<p class="comment-body">' + escapeHtml(body) + '</p>'
 
-                    //   操作栏：蜡烛点赞（跳转到该评论页操作）+ 回复（跳转到 Issue 页）
+                    //   操作栏：蜡烛阅览次数 + 回复（跳转到 Issue 页）
                     +   '<div class="comment-actions">'
-                    +     '<a href="' + escapeHtml(htmlUrl) + '" target="_blank" rel="noopener" class="like-btn" title="在 GitHub 上点亮蜡烛">'
+                    +     '<span class="like-btn" title="祷文被阅览次数">'
                     +       '<span class="like-icon">🕯︎</span>'
-                    +       '<span class="like-count">' + likes + '</span>'
-                    +     '</a>'
+                    +       '<span class="like-count">' + views + '</span>'
+                    +     '</span>'
                     +     '<a href="' + escapeHtml(htmlUrl) + '" target="_blank" rel="noopener" class="reply-btn" title="在 GitHub 上回复">'
                     +       '<span>🗨︎</span>'
                     +     '</a>'
