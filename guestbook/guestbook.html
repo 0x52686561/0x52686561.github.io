@@ -97,7 +97,7 @@
         .deco-seal {
             max-width: 100%;
             height: auto;
-            max-height: 180px;          /* 限制最大高度，约为页尾卡片高度的 1.5 倍 */
+            object-fit: contain;        /* 保持原比例完整显示 */
         }
 
         /* 竖排经文文字 */
@@ -177,7 +177,10 @@
 
         /* ===== 输入区：顶部固定，类似微博发帖框 ===== */
         .composer {
-            background: rgba(255, 255, 255, 0.9);
+            background-image: url('input-bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             border: 1px solid #222;
             border-radius: 4px;
             padding: 16px;
@@ -201,7 +204,7 @@
             resize: vertical;   /* 只允许垂直方向拖拽放大 */
             outline: none;
             transition: border-color 0.2s;
-            background: #fff;
+            background: rgba(255, 255, 255, 0.85);
             color: #222;
         }
 
@@ -274,14 +277,18 @@
         }
 
         /* 单条留言卡片
-           完全使用 comment-bg.png 作为背景，不添加任何额外边框 */
+           使用 comment-bg.png 作为背景，保持 16:9 比例不被压扁 */
         .comment-card {
             background-image: url('comment-bg.png');
-            background-size: 100% 100%;        /* 背景图完全贴合卡片尺寸 */
+            background-size: contain;           /* 保持图片原比例完整显示 */
             background-position: center;
             background-repeat: no-repeat;
             padding: 18px 20px;
             position: relative;
+            aspect-ratio: 16/9;                 /* 强制卡片保持 16:9 比例 */
+            min-height: 200px;                  /* 最小高度，确保内容能显示 */
+            display: flex;
+            flex-direction: column;
         }
 
         /* 卡片内的实际内容（header/body/actions） */
@@ -1203,12 +1210,12 @@
                         img.alt = '';
                         img.draggable = false;
 
-                        // 印记大小：60px ~ 130px
-                        var size = randomBetween(60, 130);
-                        img.style.width = size + 'px';
+                        // 印记大小：设置max-width保持原比例，不强制拉伸
+                        var maxWidth = randomBetween(60, 130);
+                        img.style.maxWidth = maxWidth + 'px';
 
                         item.style.transform = 'rotate(' + rotate + 'deg)';
-                        item.style.opacity = randomBetween(0.08, 0.18);   // 很淡，不抢眼
+                        item.style.opacity = randomBetween(0.08, 0.18);
                         item.appendChild(img);
                     } else {
                         // 竖排文字
