@@ -22,8 +22,9 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            min-height: 100vh;
-            background-image: url('sanctuary-bg.jpg');
+            height: 100vh;                  /* 固定高度，禁止页面滚动 */
+            overflow: hidden;               /* 页面本身不滚动 */
+            background-image: url('bg2.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -56,37 +57,39 @@
             transform: translateY(0);
         }
 
-        /* 2. 卡片飞入：从下方 60px 飞进来，带轻微缩放，更有"飞"的感觉 */
+        /* 2. 卡片淡入淡出：基于滚动位置，进入视口时淡入并轻微上浮 */
         .card-fly-in {
             opacity: 0;
-            transform: translateY(60px) scale(0.96);
-            transition: opacity 0.8s cubic-bezier(0.22, 0.61, 0.36, 1),
-                        transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+            transform: translateY(30px);
+            transition: opacity 0.6s ease,
+                        transform 0.6s ease;
         }
         .card-fly-in.entered {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translateY(0);
         }
 
         /* ===== 页面整体布局 ===== */
         .page-layout {
             position: relative;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             justify-content: center;
+            overflow: hidden;
         }
 
-        /* ===== 页面整体容器：像一页展开的古老祷文卷轴 ===== */
+        /* ===== 页面整体容器 ===== */
         .page-wrapper {
-            max-width: 720px;              /* 最大宽度，太宽不好读 */
+            max-width: 720px;
             width: 100%;
-            margin: 0 auto;                /* 水平居中 */
-            padding: 40px 24px 80px;       /* 上下左右内边距 */
-            min-height: 100vh;
+            margin: 0 auto;
+            padding: 24px 24px 24px;
+            height: 100vh;                  /* 固定高度 */
             display: flex;
             flex-direction: column;
             position: relative;
             z-index: 5;
+            overflow: hidden;               /* 容器本身不滚动 */
         }
 
         /* 卡片内纯洁印记装饰：贴在卡片右侧，不透明 */
@@ -106,7 +109,7 @@
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 1px solid #e1b861;
+            border-bottom: 1px solid #9a6b2f;
             position: relative;
         }
 
@@ -115,14 +118,14 @@
             letter-spacing: 10px;
             margin: 0 0 10px;
             font-weight: 700;
-            color: #e1b861;
+            color: #9a6b2f;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
         }
 
         .page-header .subtitle {
             font-size: 13px;
             letter-spacing: 4px;
-            color: #e1b861;
+            color: #9a6b2f;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
         }
 
@@ -134,7 +137,7 @@
             top: 50%;
             width: 60px;
             height: 1px;
-            background: #e1b861;
+            background: #9a6b2f;
         }
         .page-header::before { left: 0; }
         .page-header::after  { right: 0; }
@@ -146,13 +149,13 @@
             left: 24px;
             font-size: 13px;
             letter-spacing: 2px;
-            color: #e1b861;
+            color: #9a6b2f;
             text-decoration: none;
             border-bottom: 1px solid transparent;
             transition: border-color 0.2s;
         }
         .back-home:hover {
-            border-bottom-color: #e1b861;
+            border-bottom-color: #9a6b2f;
         }
 
         /* ===== 输入区 ===== */
@@ -161,7 +164,7 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            border: 1px solid #e1b861;
+            border: 1px solid #9a6b2f;
             border-radius: 4px;
             padding: 16px;
             margin-bottom: 30px;
@@ -223,18 +226,38 @@
             width: auto;
         }
 
-        /* ===== 留言列表：时间线式，从新到旧 ===== */
+        /* ===== 留言列表：可滚动区域 ===== */
         .comment-list {
-            flex: 1;
+            flex: 1;                          /* 占满剩余空间 */
             display: flex;
             flex-direction: column;
-            gap: 20px;       /* 每条留言之间的间距 */
+            gap: 20px;
+            overflow-y: auto;                 /* 只有这里滚动 */
+            overflow-x: hidden;
+            padding-right: 8px;               /* 给滚动条留空间 */
+            scroll-behavior: smooth;
+        }
+
+        /* 自定义滚动条样式 */
+        .comment-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .comment-list::-webkit-scrollbar-track {
+            background: rgba(154, 107, 47, 0.1);
+            border-radius: 3px;
+        }
+        .comment-list::-webkit-scrollbar-thumb {
+            background: rgba(154, 107, 47, 0.5);
+            border-radius: 3px;
+        }
+        .comment-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(154, 107, 47, 0.8);
         }
 
         /* Utterances 容器 */
         #utterances-container {
             background: rgba(255, 255, 255, 0.95);
-            border: 1px solid #e1b861;
+            border: 1px solid #9a6b2f;
             border-radius: 4px;
             padding: 20px;
             min-height: 200px;
@@ -245,7 +268,7 @@
             content: '正在召唤祈祷室...';
             display: block;
             text-align: center;
-            color: #e1b861;
+            color: #9a6b2f;
             font-size: 14px;
             letter-spacing: 2px;
             padding: 40px 0;
@@ -257,16 +280,18 @@
         }
 
         /* 单条留言卡片
-           使用 border-image 九宫格方案，整张图自动适配任意高度 */
+           使用 border-image 九宫格：
+           原图 1258×661，切片：左右各236px、上下各219px
+           四角(236×219)固定不变形，四边拉伸，中间填充
+           如果背景大过卡片则等比缩放（border-image 自动等比） */
         .comment-card {
             padding: 28px 32px;
             position: relative;
-            min-height: 160px;
+            min-height: 200px;
 
-            /* border-image 九宫格：整张图自动切成9块 */
-            /* 切片值：180px = 角落装饰区域大小，auto = 边框自动拉伸 */
-            border: 180px solid transparent;
-            border-image: url('comment-bg.jpg') 180 fill / auto;
+            /* border-image：236 219 是切片值，fill 填充中间，stretch 拉伸边 */
+            border: 219px 236px solid transparent;
+            border-image: url('comment-bg.jpg') 219 236 fill / 1 / 0 stretch;
         }
 
         /* 卡片内内容层级比装饰高，不被遮挡 */
@@ -451,13 +476,13 @@
             margin: 0 0 8px;
             font-size: 22px;
             letter-spacing: 8px;
-            color: #e1b861;
+            color: #9a6b2f;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
         }
 
         .utterances-hint {
             font-size: 12px;
-            color: #e1b861;
+            color: #9a6b2f;
             letter-spacing: 2px;
             margin: 0 0 16px;
         }
@@ -470,20 +495,20 @@
             border: none;
             font-size: 20px;
             cursor: pointer;
-            color: #e1b861;
+            color: #9a6b2f;
             line-height: 1;
             padding: 4px 8px;
             transition: color 0.2s;
         }
 
         .utterances-close:hover {
-            color: #c99f4a;
+            color: #7a5628;
         }
 
         /* ===== 回复弹窗专用样式 ===== */
         .reply-original {
             background: rgba(0, 0, 0, 0.04);
-            border-left: 3px solid #e1b861;
+            border-left: 3px solid #9a6b2f;
             padding: 12px 16px;
             margin: 0 0 16px;
             text-align: left;
@@ -493,7 +518,7 @@
 
         .reply-original .reply-original-author {
             font-weight: 700;
-            color: #6b5330;
+            color: #9a6b2f;
             margin-bottom: 6px;
             font-size: 14px;
         }
@@ -510,7 +535,7 @@
         .reply-input {
             width: 100%;
             min-height: 100px;
-            border: 1px solid #e1b861;
+            border: 1px solid #9a6b2f;
             border-radius: 4px;
             padding: 12px;
             font-family: 'Noto Serif SC', serif;
@@ -525,7 +550,7 @@
         }
 
         .reply-input:focus {
-            border-color: #e1b861;
+            border-color: #9a6b2f;
         }
 
         .reply-modal-footer {
@@ -690,7 +715,7 @@
             margin-top: 40px;
             background: rgba(255, 255, 255, 0.85);
             padding: 15px 0;
-            border-top: 1px solid #e1b861;
+            border-top: 1px solid #9a6b2f;
             text-align: center;
         }
 
@@ -698,7 +723,7 @@
             font-size: 18px;
             letter-spacing: 6px;
             line-height: 1.5;
-            color: #e1b861;
+            color: #9a6b2f;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
             margin: 0 auto;
             font-weight: bold;
@@ -708,7 +733,7 @@
         .signature {
             margin-top: 6px;
             padding-top: 6px;
-            border-top: 1px solid #e1b861;
+            border-top: 1px solid #9a6b2f;
             width: 60px;
             margin-left: auto;
             margin-right: auto;
@@ -716,7 +741,7 @@
 
         .signature span {
             font-size: 10px;
-            color: #e1b861;
+            color: #9a6b2f;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
         }
 
@@ -784,7 +809,7 @@
             <div class="composer-footer">
                 <span class="composer-hint">以帝皇之名发言</span>
                 <button class="send-btn" id="sendBtn" title="祈祷">
-                    <img src="../iris.png" alt="祈祷">
+                    <img src="guest-iris.png" alt="祈祷">
                 </button>
             </div>
         </div>
@@ -829,21 +854,11 @@
                 <div class="reply-modal-footer">
                     <span class="utterances-hint">回复内容将自动引用原作者</span>
                     <button class="reply-submit-btn" id="replySubmit" title="祈祷">
-                        <img src="../iris.png" alt="祈祷">
+                        <img src="guest-iris.png" alt="祈祷">
                     </button>
                 </div>
             </div>
         </div>
-
-        <!-- ===== 页脚铭文（和首页同格式横条）===== -->
-        <footer class="bottom-inscription fly-in">
-            <p class="inscription-text">
-                <span class="scale-x">“帝皇的圣光，与你同在。”</span>
-            </p>
-            <div class="signature">
-                <span class="scale-x">0x52686561</span>
-            </div>
-        </footer>
 
         </div><!-- /page-wrapper -->
     </div><!-- /page-layout -->
@@ -929,6 +944,11 @@
                 return base + timeBonus + variance;
             }
 
+            function randomPick(arr) {
+                return arr[Math.floor(Math.random() * arr.length)];
+            }
+
+            // 纯洁印记图片列表
             var SEAL_IMAGES = [
                 'seal1.png',
                 'seal2.png',
@@ -939,10 +959,7 @@
                 return Math.random() * (max - min) + min;
             }
 
-            function randomPick(arr) {
-                return arr[Math.floor(Math.random() * arr.length)];
-            }
-
+            // 在每张卡片右侧随机贴1-2个纯洁印记
             function generateCardSeals() {
                 var cards = document.querySelectorAll('.comment-card');
                 cards.forEach(function(card) {
@@ -1062,14 +1079,25 @@
                 // 绑定所有回复按钮的点击事件
                 bindReplyButtons();
 
-                // 逐个触发"飞入"动画（每个卡片延迟 60ms）
+                // 用 IntersectionObserver 监听卡片是否进入视口，实现滚动淡入淡出
+                var observer = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('entered');
+                        } else {
+                            // 离开视口时移除，下次再进入会再次淡入
+                            entry.target.classList.remove('entered');
+                        }
+                    });
+                }, {
+                    root: container,           // 以留言列表为视口
+                    threshold: 0.1,            // 卡片有10%进入视口就触发
+                    rootMargin: '0px 0px -10% 0px'   // 稍微提前触发
+                });
+
                 var cards = container.querySelectorAll('.card-fly-in');
                 cards.forEach(function (card) {
-                    requestAnimationFrame(function () {
-                        requestAnimationFrame(function () {
-                            card.classList.add('entered');
-                        });
-                    });
+                    observer.observe(card);
                 });
             }
 
@@ -1307,11 +1335,6 @@
                     var hint = document.querySelector('.loading-hint.card-fly-in');
                     if (hint) hint.classList.add('entered');
                 }, 350);
-
-                setTimeout(function () {
-                    var footer = document.querySelector('.bottom-inscription.fly-in');
-                    if (footer) footer.classList.add('entered');
-                }, 550);
             }
 
             // =====================================================
