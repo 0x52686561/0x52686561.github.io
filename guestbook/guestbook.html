@@ -23,7 +23,7 @@
             width: 100%;
             height: 100vh;                  /* 固定高度，禁止页面滚动 */
             overflow: hidden;               /* 页面本身不滚动 */
-            background-image: url('bg2.jpg');
+            background-image: url('guestbook bg1.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -283,16 +283,16 @@
         /* 单条留言卡片
            使用 border-image 九宫格：
            原图 1258×661，切片：左右各236px、上下各219px
-           缩小比例：边框宽度设为 50px，切片值按比例缩小 */
+           slice 值用原图像素，border-image-width 控制显示大小 */
         .comment-card {
-            padding: 32px 36px;
+            padding: 24px 28px;
             position: relative;
             min-height: 200px;
 
-            /* border-width: 50px（上下） 60px（左右） */
-            border: 50px 60px solid transparent;
-            /* 切片值按比例缩小：219/4≈55, 236/4≈59 */
-            border-image: url('comment-bg.jpg') 55 59 fill / 1 / 0 stretch;
+            /* border-width 留够空间给边框 */
+            border: 60px 70px solid transparent;
+            /* border-image: 切片值(原图像素) fill 填充中间 / 显示宽度(上下 左右) / outset 0 / 拉伸方式 */
+            border-image: url('comment-bg.jpg') 219 236 fill / 60px 70px / 0 stretch;
         }
 
         /* 卡片内内容层级比装饰高，不被遮挡 */
