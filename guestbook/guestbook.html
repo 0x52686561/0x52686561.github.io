@@ -68,15 +68,64 @@
             transform: translateY(0) scale(1);
         }
 
+        /* ===== 页面整体布局：中间内容 + 两侧装饰 =====
+           .page-layout 是最外层，左右各放一个装饰柱，中间是内容
+           窄屏时两侧装饰自动隐藏 */
+        .page-layout {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 左右两侧装饰柱 */
+        .side-decoration {
+            position: fixed;           /* 固定，不随内容滚动 */
+            top: 0;
+            bottom: 0;
+            width: 200px;              /* 装饰区宽度 */
+            pointer-events: none;      /* 不阻挡鼠标点击 */
+            z-index: 1;
+            overflow: hidden;
+        }
+        .side-decoration.left  { left: 0; }
+        .side-decoration.right { right: 0; }
+
+        /* 装饰元素通用样式：图片 + 文字都用这个 */
+        .deco-item {
+            position: absolute;
+            opacity: 0.15;             /* 默认很淡，不抢主内容视线 */
+            transition: opacity 0.3s;
+        }
+
+        /* 纯洁印记图片 */
+        .deco-seal {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* 竖排经文文字 */
+        .deco-text {
+            writing-mode: vertical-rl;   /* 竖排，从右到左 */
+            text-orientation: upright;   /* 文字直立 */
+            font-size: 14px;
+            letter-spacing: 4px;
+            color: #111;
+            white-space: nowrap;
+            line-height: 1.6;
+        }
+
         /* ===== 页面整体容器：像一页展开的古老祷文卷轴 ===== */
         .page-wrapper {
             max-width: 720px;              /* 最大宽度，太宽不好读 */
+            width: 100%;
             margin: 0 auto;                /* 水平居中 */
             padding: 40px 24px 80px;       /* 上下左右内边距 */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             position: relative;
+            z-index: 5;                    /* 比两侧装饰高 */
         }
 
         /* ===== 页面标题 ===== */
@@ -656,6 +705,16 @@
         }
 
         /* ===== 响应式：移动端 ===== */
+        @media (max-width: 1100px) {
+            /* 窄屏时两侧装饰缩小，让出空间给内容 */
+            .side-decoration { width: 120px; }
+        }
+
+        @media (max-width: 900px) {
+            /* 更窄时直接隐藏两侧装饰 */
+            .side-decoration { display: none; }
+        }
+
         @media (max-width: 640px) {
             .page-wrapper {
                 padding: 20px 14px 60px;
@@ -697,8 +756,18 @@
 </head>
 <body>
 
-    <!-- 页面整体容器 -->
-    <div class="page-wrapper">
+    <!-- 页面整体布局：中间内容 + 两侧装饰 -->
+    <div class="page-layout">
+
+        <!-- 左侧装饰柱：纯洁印记 + 竖排经文
+             所有元素通过 JS 随机生成位置、大小、旋转角度 -->
+        <aside class="side-decoration left" id="decoLeft"></aside>
+
+        <!-- 右侧装饰柱 -->
+        <aside class="side-decoration right" id="decoRight"></aside>
+
+        <!-- 中间内容区 -->
+        <div class="page-wrapper">
 
         <!-- 返回首页 -->
         <a href="../index.html" class="back-home">« 返回</a>
@@ -757,7 +826,8 @@
             </div>
         </footer>
 
-    </div>
+        </div><!-- /page-wrapper -->
+    </div><!-- /page-layout -->
 
     <!-- ===== JavaScript ===== -->
     <script>
@@ -1075,9 +1145,132 @@
             }
 
             // =====================================================
+            // 两侧装饰：纯洁印记 + 竖排经文
+            // 随机大小、位置、旋转角度，营造"古老祷文卷轴"的氛围
+            // =====================================================
+
+            // 纯洁印记图片（替换成你上传的文件名）
+            var SEAL_IMAGES = [
+                'seal1.png',
+                'seal2.png',
+                'seal3.png'
+            ];
+
+            // 竖排经文文字（战锤40K风格祷文、圣言、殉道者语录）
+            var DECO_TEXTS = [
+                '帝皇的圣光永不熄灭',
+                '信仰即盾 忠诚即剑',
+                '殉道者的灵魂归于帝皇',
+                '异端必诛 奸奇必灭',
+                '以帝皇之名 行审判之事',
+                '星海浩瀚 唯帝皇是瞻',
+                '吾等乃帝皇之锤',
+                '死亡乃忠诚之证明',
+                '神圣泰拉的光辉照耀众生',
+                '愿帝皇的意志得以施行',
+                '为了帝皇 为了人类',
+                '不屈不挠 至死方休',
+                '殉道者之血浇灌帝国之花',
+                '圣光指引前路',
+                '审判之日终将降临',
+                '忠诚无价 荣誉永恒',
+                '机械神教 万机之神',
+                '虚空之中 帝皇同在',
+                '真理之光照亮黑暗',
+                '帝皇端坐黄金王座',
+                '千年守望 万年不朽',
+                '愿帝皇保佑你 孩子',
+                '黑暗之中 唯帝皇是光',
+                '我等乃帝皇的子民',
+                '圣言入耳 圣光入心',
+                '为帝国而死 无上荣光',
+                '纯洁印记 神圣庇佑',
+                '祈祷室中 帝皇聆听',
+                '0x52686561',
+                '神圣殉道录'
+            ];
+
+            // 工具函数：生成 min~max 之间的随机数
+            function randomBetween(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            // 工具函数：从数组里随机选一个
+            function randomPick(arr) {
+                return arr[Math.floor(Math.random() * arr.length)];
+            }
+
+            // 生成单侧装饰（左侧或右侧）
+            function generateSideDecoration(sideEl, side) {
+                if (!sideEl) return;
+
+                var vh = window.innerHeight;
+                var itemCount = 14;   // 每侧放 14 个元素（图片 + 文字混合）
+
+                for (var i = 0; i < itemCount; i++) {
+                    var isSeal = Math.random() < 0.35;   // 35% 概率是印记图，65% 是文字
+                    var item = document.createElement('div');
+                    item.className = 'deco-item';
+
+                    // 垂直位置：均匀分布在 0~100% 高度之间，加一点随机偏移
+                    var top = (i / itemCount) * 100 + randomBetween(-3, 3);
+                    top = Math.max(2, Math.min(95, top));   // 限制在 2%~95% 之间
+                    item.style.top = top + '%';
+
+                    // 水平位置：在装饰区内随机
+                    var left = randomBetween(10, 70);
+                    item.style.left = left + '%';
+
+                    // 旋转角度：随机 -15° ~ +15°
+                    var rotate = randomBetween(-15, 15);
+
+                    if (isSeal) {
+                        // 纯洁印记图片
+                        var img = document.createElement('img');
+                        img.className = 'deco-seal';
+                        img.src = randomPick(SEAL_IMAGES);
+                        img.alt = '';
+                        img.draggable = false;
+
+                        // 印记大小：60px ~ 130px
+                        var size = randomBetween(60, 130);
+                        img.style.width = size + 'px';
+
+                        item.style.transform = 'rotate(' + rotate + 'deg)';
+                        item.style.opacity = randomBetween(0.08, 0.18);   // 很淡，不抢眼
+                        item.appendChild(img);
+                    } else {
+                        // 竖排文字
+                        var text = document.createElement('div');
+                        text.className = 'deco-text scale-x';
+                        text.textContent = randomPick(DECO_TEXTS);
+
+                        // 文字大小：11px ~ 18px
+                        var fontSize = randomBetween(11, 18);
+                        text.style.fontSize = fontSize + 'px';
+
+                        // 透明度更淡一些
+                        item.style.opacity = randomBetween(0.1, 0.22);
+                        item.style.transform = 'rotate(' + rotate + 'deg)';
+                        item.appendChild(text);
+                    }
+
+                    sideEl.appendChild(item);
+                }
+            }
+
+            function initDecorations() {
+                var leftEl  = document.getElementById('decoLeft');
+                var rightEl = document.getElementById('decoRight');
+                generateSideDecoration(leftEl, 'left');
+                generateSideDecoration(rightEl, 'right');
+            }
+
+            // =====================================================
             // 页面加载完成后初始化
             // =====================================================
             document.addEventListener('DOMContentLoaded', function () {
+                initDecorations();       // 生成两侧装饰元素
                 initUtterances();        // 提前加载 Utterances（在隐藏的弹窗里）
                 initSendButton();        // 绑定发送按钮 → 弹窗
                 initEntranceAnimations(); // 入场动画
