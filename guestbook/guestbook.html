@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <!-- ============================================================
      大祈祷室（留言页）
-     风格：黑白线稿 + 祷文卷轴 + 战锤40K神圣感
      ============================================================ -->
 <html lang="zh-CN">
 <head>
@@ -24,7 +23,7 @@
             width: 100%;
             height: 100vh;                  /* 固定高度，禁止页面滚动 */
             overflow: hidden;               /* 页面本身不滚动 */
-            background-image: url('guestbook bg1.jpg');
+            background-image: url('bg2.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -84,12 +83,14 @@
             width: 100%;
             margin: 0 auto;
             padding: 24px 24px 24px;
-            height: 100vh;                  /* 固定高度 */
+            height: 100vh;
             display: flex;
             flex-direction: column;
             position: relative;
             z-index: 5;
-            overflow: hidden;               /* 容器本身不滚动 */
+            overflow: hidden;
+            background: rgba(255, 255, 250, 0.95);   /* 不透明蒙版 */
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
         }
 
         /* 卡片内纯洁印记装饰：贴在卡片右侧，不透明 */
@@ -282,16 +283,16 @@
         /* 单条留言卡片
            使用 border-image 九宫格：
            原图 1258×661，切片：左右各236px、上下各219px
-           四角(236×219)固定不变形，四边拉伸，中间填充
-           如果背景大过卡片则等比缩放（border-image 自动等比） */
+           缩小比例：边框宽度设为 50px，切片值按比例缩小 */
         .comment-card {
-            padding: 28px 32px;
+            padding: 32px 36px;
             position: relative;
             min-height: 200px;
 
-            /* border-image：236 219 是切片值，fill 填充中间，stretch 拉伸边 */
-            border: 219px 236px solid transparent;
-            border-image: url('comment-bg.jpg') 219 236 fill / 1 / 0 stretch;
+            /* border-width: 50px（上下） 60px（左右） */
+            border: 50px 60px solid transparent;
+            /* 切片值按比例缩小：219/4≈55, 236/4≈59 */
+            border-image: url('comment-bg.jpg') 55 59 fill / 1 / 0 stretch;
         }
 
         /* 卡片内内容层级比装饰高，不被遮挡 */
