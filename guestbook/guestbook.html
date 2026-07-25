@@ -278,56 +278,20 @@
             display: none;
         }
 
-/* 单条留言卡片
-   用 bg2.jpg 做底色 + CSS双层金边 + 伪元素放角落装饰
-   角落大小可调，位置自由控制 */
-.comment-card {
-    padding: 28px 32px;
-    position: relative;
-    min-height: 200px;
-    background-image: url('bg2.jpg');
-    background-size: cover;
-    background-position: center;
+        /* 单条留言卡片
+           使用 border-image 九宫格：
+           原图 1258×661，切片：左右各236px、上下各219px
+           slice 值用原图像素，border-image-width 控制显示大小 */
+        .comment-card {
+            padding: 24px 28px;
+            position: relative;
+            min-height: 200px;
 
-    /* 双层金色边框 */
-    border: 2px solid #9a6b2f;
-    box-shadow: inset 0 0 0 6px transparent,
-                inset 0 0 0 7px #9a6b2f;
-}
-
-/* 左下角装饰：corner.jpg 垂直翻转 */
-.comment-card::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 180px;
-    height: 180px;
-    background-image: url('corner.jpg');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: bottom left;
-    transform: scaleY(-1);     /* 上下翻转，从左上变左下 */
-    pointer-events: none;
-    z-index: 1;
-}
-
-/* 右上角装饰：corner.jpg 水平翻转 */
-.comment-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 180px;
-    height: 180px;
-    background-image: url('corner.jpg');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: top right;
-    transform: scaleX(-1);     /* 左右翻转，从左上变右上 */
-    pointer-events: none;
-    z-index: 1;
-}
+            /* border-width 留够空间给边框 */
+            border: 60px 70px solid transparent;
+            /* border-image: 切片值(原图像素) fill 填充中间 / 显示宽度(上下 左右) / outset 0 / 拉伸方式 */
+            border-image: url('comment-bg.jpg') 219 236 fill / 60px 70px / 0 stretch;
+        }
 
         /* 卡片内内容层级比装饰高，不被遮挡 */
         .comment-header,
