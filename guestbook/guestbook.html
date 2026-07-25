@@ -228,13 +228,50 @@
             display: none;
         }
 
-        /* 单条留言卡片 */
+        /* 单条留言卡片
+           使用 comment-bg.png 作为背景，叠加半透明白色遮罩保证文字可读 */
         .comment-card {
-            background: rgba(255, 255, 255, 0.95);
+            background-color: rgba(255, 255, 255, 0.92);   /* 备用底色 */
+            background-image: url('comment-bg.png');
+            background-size: cover;            /* 背景图拉伸铺满 */
+            background-position: center;
+            background-repeat: no-repeat;
             border: 1px solid #222;
             border-radius: 4px;
             padding: 18px 20px;
             position: relative;
+            overflow: hidden;                 /* 让 ::before 遮罩不溢出圆角 */
+        }
+
+        /* 半透明白色遮罩层：盖在背景图上方、文字下方，保护可读性 */
+        .comment-card .bg-overlay {
+            position: absolute;
+            inset: 0;                        /* 撑满整个卡片 */
+            background: rgba(255, 255, 255, 0.75);
+            z-index: 0;                       /* 在背景图之上 */
+            pointer-events: none;             /* 不阻挡点击 */
+        }
+
+        /* 卡片内的实际内容（header/body/actions）都要在遮罩之上 */
+        .comment-header,
+        .comment-body,
+        .comment-actions,
+        .reply-list,
+        .reply-composer {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 加载中提示 */
+        .loading-hint {
+            text-align: center;
+            padding: 40px 0;
+            color: #999;
+            font-size: 14px;
+            letter-spacing: 2px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid #222;
+            border-radius: 4px;
         }
 
         /* 留言卡片顶部的装饰角（左上、右下，增加仪式感） */
@@ -265,6 +302,13 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 10px;
+        }
+
+        /* 头像链接：去掉默认下划线 */
+        .avatar-link {
+            display: block;
+            line-height: 0;
+            text-decoration: none;
         }
 
         .avatar {
@@ -324,7 +368,7 @@
             border-top: 1px dashed #ccc;
         }
 
-        /* 回复按钮（演示卡片用，Utterances 用自带样式） */
+        /* 回复按钮 */
         .reply-btn {
             display: flex;
             align-items: center;
@@ -344,6 +388,104 @@
         .reply-btn:hover {
             color: #111;
             background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* 点赞按钮：蜡烛图标
+           点击会跳转到 GitHub 该评论页面让用户登录后点赞
+           （前端无法安全存储 token，所以用跳转方式） */
+        .like-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 13px;
+            letter-spacing: 2px;
+            color: #555;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            text-decoration: none;   /* 用 <a> 标签时去掉下划线 */
+        }
+
+        .like-btn:hover {
+            color: #111;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .like-icon {
+            font-size: 20px;
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+
+        .like-btn:hover .like-icon {
+            transform: scale(1.15);
+        }
+
+        .like-count {
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* ===== Utterances 弹窗（用于发新留言）===== */
+        .utterances-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .utterances-modal-content {
+            background: rgba(255, 255, 255, 0.97);
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 30px 24px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            text-align: center;
+        }
+
+        .utterances-title {
+            margin: 0 0 8px;
+            font-size: 22px;
+            letter-spacing: 8px;
+        }
+
+        .utterances-hint {
+            font-size: 12px;
+            color: #888;
+            letter-spacing: 2px;
+            margin: 0 0 16px;
+        }
+
+        .utterances-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #555;
+            line-height: 1;
+            padding: 4px 8px;
+            transition: color 0.2s;
+        }
+
+        .utterances-close:hover {
+            color: #111;
         }
 
         /* ===== 回复区（主留言下的回复列表） ===== */
@@ -579,15 +721,30 @@
         </div>
 
         <!-- ===== 留言列表（从新到旧） =====
-             使用 Utterances（基于 GitHub Issues）存储真实留言
-             Issue #1 用于存储所有评论 -->
+             数据源：GitHub Issues #1 的评论
+             渲染方式：调用 GitHub API 读取，自己渲染成卡片 -->
         <div class="comment-list" id="commentList">
 
-            <!-- Utterances 评论容器
-                 用 card-fly-in 类做"飞进来"效果
-                 script 标签会自动在这里渲染评论框和评论列表 -->
-            <div id="utterances-container" class="card-fly-in"></div>
+            <!-- 加载中提示（API 返回后会被替换） -->
+            <div class="loading-hint card-fly-in" id="loadingHint">
+                <span>正在召唤祈祷室...</span>
+            </div>
 
+            <!-- 自定义留言卡片会通过 JS 注入到这里 -->
+            <div id="commentCards"></div>
+
+        </div>
+
+        <!-- ===== 隐藏的 Utterances 容器 =====
+             不直接显示，点击"发留言"时弹窗打开
+             用于让用户登录 GitHub 后发布新留言 -->
+        <div id="utterancesModal" class="utterances-modal" style="display:none;">
+            <div class="utterances-modal-content">
+                <button class="utterances-close" id="utterancesClose" aria-label="关闭">✕</button>
+                <h3 class="utterances-title"><span class="scale-x">登 录 并 祈 祷</span></h3>
+                <p class="utterances-hint">通过 GitHub 账号登录后，即可发布留言</p>
+                <div id="utterances-container"></div>
+            </div>
         </div>
 
         <!-- ===== 页脚铭文（和首页同格式横条）===== -->
@@ -608,22 +765,203 @@
             'use strict';
 
             // =====================================================
-            // 接入 Utterances（GitHub Issues 评论系统）
-            // 配置说明：
-            //   repo          : 你的仓库（owner/repo 格式）
-            //   issue-number  : 用于存储评论的 Issue 编号（你在 GitHub 新建的那条 #1）
-            //   theme         : 主题（github-light 是白底黑字，和我们风格匹配）
-            //   label         : 给评论 Issue 打的标签（可选，方便后台管理）
+            // 配置区
+            // =====================================================
+            var CONFIG = {
+                owner:        '0x52686561',              // GitHub 用户名
+                repo:         '0x52686561.github.io',     // 仓库名
+                issueNumber:  1,                          // 用于存储留言的 Issue 编号
+                perPage:      100                         // 每页加载多少条评论（GitHub 单次最多100）
+            };
+
+            // 评论区 API 地址（公开读取，无需 token）
+            var API_URL = 'https://api.github.com/repos/' + CONFIG.owner + '/' + CONFIG.repo
+                        + '/issues/' + CONFIG.issueNumber + '/comments?per_page=' + CONFIG.perPage
+                        + '&sort=created&direction=desc';   // 按创建时间倒序（新的在前）
+
+            // Issue 页面地址（点击头像/用户名时跳转）
+            var ISSUE_URL = 'https://github.com/' + CONFIG.owner + '/' + CONFIG.repo
+                          + '/issues/' + CONFIG.issueNumber;
+
+            // =====================================================
+            // 工具函数
             // =====================================================
 
+            /* HTML 转义：防止评论里的 < > & " 等字符被当成 HTML 解析
+               避免 XSS 攻击，也避免显示乱码 */
+            function escapeHtml(str) {
+                if (!str) return '';
+                var div = document.createElement('div');
+                div.textContent = str;       // 自动转义
+                return div.innerHTML;
+            }
+
+            /* 时间格式化
+               把 "2026-07-24T14:30:00Z" 转成 "2026-07-24 14:30" */
+            function formatTime(isoTime) {
+                if (!isoTime) return '';
+                var d = new Date(isoTime);
+                if (isNaN(d.getTime())) return '';   // 解析失败返回空
+                var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+                return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+                     + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+            }
+
+            /* 相对时间：把 ISO 时间转成"3小时前"这种格式
+               如果超过30天就显示绝对时间 */
+            function relativeTime(isoTime) {
+                if (!isoTime) return '';
+                var now  = Date.now();
+                var then = new Date(isoTime).getTime();
+                if (isNaN(then)) return '';
+                var diff = (now - then) / 1000;   // 秒
+
+                if (diff < 60)    return '刚刚';
+                if (diff < 3600)  return Math.floor(diff / 60) + '分钟前';
+                if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
+                if (diff < 2592000) return Math.floor(diff / 86400) + '天前';
+                return formatTime(isoTime);   // 超过30天显示绝对时间
+            }
+
+            // =====================================================
+            // 调用 GitHub API 获取评论
+            // =====================================================
+            function fetchComments() {
+                return fetch(API_URL, {
+                    headers: {
+                        'Accept': 'application/vnd.github+json'   // 必须加，否则不返回 reactions 字段
+                    }
+                }).then(function (res) {
+                    if (!res.ok) {
+                        throw new Error('GitHub API 返回错误：' + res.status);
+                    }
+                    return res.json();
+                });
+            }
+
+            // =====================================================
+            // 渲染单条留言卡片
+            // =====================================================
+            function renderCommentCard(comment, index) {
+                // 提取关键字段
+                var author     = comment.user.login;
+                var avatarUrl  = comment.user.avatar_url;
+                var body       = comment.body || '';
+                var time       = comment.created_at;
+                var htmlUrl    = comment.html_url;          // 该评论的 GitHub 页面地址
+                var likes      = (comment.reactions && comment.reactions['+1']) || 0;   // 👍 数量
+
+                // 卡片 HTML 模板
+                return ''
+                    + '<article class="comment-card card-fly-in" style="transition-delay:' + (index * 60) + 'ms;">'
+                    +   '<div class="bg-overlay"></div>'   // 背景图上方的白色遮罩
+
+                    //   头部：头像 + 用户名 + 时间
+                    +   '<div class="comment-header">'
+                    +     '<a href="https://github.com/' + encodeURIComponent(author) + '" target="_blank" rel="noopener" class="avatar-link">'
+                    +       '<div class="avatar">'
+                    +         '<img src="' + escapeHtml(avatarUrl) + '" alt="' + escapeHtml(author) + '" loading="lazy">'
+                    +       '</div>'
+                    +     '</a>'
+                    +     '<div class="comment-meta">'
+                    +       '<p class="comment-author"><span class="scale-x">' + escapeHtml(author) + '</span></p>'
+                    +       '<span class="comment-time" title="' + formatTime(time) + '">' + relativeTime(time) + '</span>'
+                    +     '</div>'
+                    +   '</div>'
+
+                    //   正文
+                    +   '<p class="comment-body">' + escapeHtml(body) + '</p>'
+
+                    //   操作栏：蜡烛点赞（跳转到该评论页操作）+ 回复（跳转到 Issue 页）
+                    +   '<div class="comment-actions">'
+                    +     '<a href="' + escapeHtml(htmlUrl) + '" target="_blank" rel="noopener" class="like-btn" title="在 GitHub 上点亮蜡烛">'
+                    +       '<span class="like-icon">🕯︎</span>'
+                    +       '<span class="like-count">' + likes + '</span>'
+                    +     '</a>'
+                    +     '<a href="' + escapeHtml(htmlUrl) + '" target="_blank" rel="noopener" class="reply-btn" title="在 GitHub 上回复">'
+                    +       '<span>🗨︎</span>'
+                    +     '</a>'
+                    +   '</div>'
+                    + '</article>';
+            }
+
+            // =====================================================
+            // 渲染整个留言列表
+            // =====================================================
+            function renderComments(comments) {
+                var container = document.getElementById('commentCards');
+                var loadingHint = document.getElementById('loadingHint');
+
+                // 隐藏加载提示
+                if (loadingHint) loadingHint.style.display = 'none';
+
+                if (!comments || comments.length === 0) {
+                    // 暂无留言
+                    container.innerHTML = ''
+                        + '<div class="loading-hint card-fly-in entered">'
+                        +   '<span>祈祷室空寂无声，成为第一位祈祷者。</span>'
+                        + '</div>';
+                    return;
+                }
+
+                // 拼接所有卡片 HTML
+                var html = comments.map(function (c, i) {
+                    return renderCommentCard(c, i);
+                }).join('');
+
+                container.innerHTML = html;
+
+                // 逐个触发"飞入"动画（每个卡片延迟 60ms）
+                var cards = container.querySelectorAll('.card-fly-in');
+                cards.forEach(function (card) {
+                    requestAnimationFrame(function () {
+                        requestAnimationFrame(function () {
+                            card.classList.add('entered');
+                        });
+                    });
+                });
+            }
+
+            // =====================================================
+            // 加载失败时显示
+            // =====================================================
+            function renderError(msg) {
+                var container = document.getElementById('commentCards');
+                var loadingHint = document.getElementById('loadingHint');
+                if (loadingHint) loadingHint.style.display = 'none';
+
+                container.innerHTML = ''
+                    + '<div class="loading-hint card-fly-in entered">'
+                    +   '<span>祈祷室召唤失败：' + escapeHtml(msg) + '</span><br>'
+                    +   '<a href="' + ISSUE_URL + '" target="_blank" rel="noopener" style="color:#555;text-decoration:underline;margin-top:8px;display:inline-block;">前往 GitHub 查看</a>'
+                    + '</div>';
+            }
+
+            // =====================================================
+            // 加载留言数据 + 渲染
+            // =====================================================
+            function loadComments() {
+                fetchComments()
+                    .then(function (comments) {
+                        renderComments(comments);
+                    })
+                    .catch(function (err) {
+                        renderError(err.message);
+                    });
+            }
+
+            // =====================================================
+            // Utterances：放在弹窗里，用于发新留言
+            // 提前在页面加载时就初始化，用户点开弹窗时已经准备好
+            // =====================================================
             function initUtterances() {
                 var container = document.getElementById('utterances-container');
                 if (!container) return;
 
                 var script = document.createElement('script');
                 script.src = 'https://utteranc.es/client.js';
-                script.setAttribute('repo', '0x52686561/0x52686561.github.io');
-                script.setAttribute('issue-number', '1');
+                script.setAttribute('repo', CONFIG.owner + '/' + CONFIG.repo);
+                script.setAttribute('issue-number', CONFIG.issueNumber);
                 script.setAttribute('theme', 'github-light');
                 script.setAttribute('label', '大祈祷室');
                 script.setAttribute('crossorigin', 'anonymous');
@@ -632,50 +970,84 @@
                 container.appendChild(script);
             }
 
-            // =====================================================
-            // 顶部输入框：点击 iris.png 后平滑滚动到 Utterances 区域
-            // （因为 Utterances 自带登录和发评论功能，
-            //   我们不能直接提交，只能引导用户滚动到评论区）
-            // =====================================================
+            // 打开 Utterances 弹窗
+            function openUtterancesModal() {
+                var modal = document.getElementById('utterancesModal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';   // 禁止背景滚动
+                }
+            }
 
+            // 关闭 Utterances 弹窗
+            function closeUtterancesModal() {
+                var modal = document.getElementById('utterancesModal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            }
+
+            // =====================================================
+            // 顶部输入框：点击 iris.png 后
+            //   1. 把内容复制到剪贴板
+            //   2. 弹出 Utterances 弹窗让用户登录后粘贴发布
+            // =====================================================
             function initSendButton() {
-                var sendBtn = document.getElementById('sendBtn');
+                var sendBtn  = document.getElementById('sendBtn');
                 var mainInput = document.getElementById('mainInput');
+                var closeBtn = document.getElementById('utterancesClose');
                 if (!sendBtn) return;
 
                 sendBtn.addEventListener('click', function () {
                     var text = mainInput.value.trim();
 
-                    // 如果用户在顶部输入框写了内容，先把它带到 Utterances 的输入框
-                    // （Utterances 加载后会在 iframe 里，跨域无法直接传值，
-                    //   所以这里只做滚动引导，让用户自己在下面登录后发布）
+                    // 如果有内容，先复制到剪贴板
                     if (text) {
-                        // 复制到剪贴板，方便用户粘贴到下方评论框
                         if (navigator.clipboard) {
                             navigator.clipboard.writeText(text).then(function () {
-                                alert('祷词已复制到剪贴板，请滚动到下方评论区登录 GitHub 后粘贴发布。');
+                                alert('祷词已复制到剪贴板。\n请在弹出的窗口中登录 GitHub 后粘贴发布。');
+                                openUtterancesModal();
                             }).catch(function () {
-                                // 复制失败，直接滚动
+                                // 复制失败，仍然打开弹窗
+                                openUtterancesModal();
                             });
+                        } else {
+                            // 浏览器不支持 clipboard API，直接打开弹窗
+                            openUtterancesModal();
                         }
                         mainInput.value = '';
+                    } else {
+                        // 没写内容，直接打开弹窗
+                        openUtterancesModal();
                     }
+                });
 
-                    // 平滑滚动到评论区
-                    var target = document.getElementById('commentList');
-                    if (target) {
-                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
+                // 关闭弹窗（关闭后延迟刷新评论列表，让用户看到刚发的新留言）
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function () {
+                        closeUtterancesModal();
+                        setTimeout(loadComments, 2000);   // 2秒后刷新（给 GitHub API 同步时间）
+                    });
+                }
+
+                // 点弹窗遮罩关闭
+                var modal = document.getElementById('utterancesModal');
+                if (modal) {
+                    modal.addEventListener('click', function (e) {
+                        if (e.target === modal) closeUtterancesModal();
+                    });
+                }
+
+                // 按 Esc 关闭弹窗
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') closeUtterancesModal();
                 });
             }
 
             // =====================================================
             // 入场动画：让页面元素依次出现
-            //   1. 标题、输入框、页脚：淡入（.fly-in → 加 .entered）
-            //   2. 留言卡片：飞入（.card-fly-in → 加 .entered）
-            //   用 setTimeout 让它们错开时间，有"逐个登场"的感觉
             // =====================================================
-
             function initEntranceAnimations() {
                 // 标题：立即淡入
                 var header = document.querySelector('.page-header.fly-in');
@@ -689,13 +1061,13 @@
                     if (composer) composer.classList.add('entered');
                 }, 150);
 
-                // 留言卡片：延迟 350ms 飞入（让标题和输入框先就位）
+                // 加载提示：延迟 350ms 飞入
                 setTimeout(function () {
-                    var card = document.querySelector('.card-fly-in');
-                    if (card) card.classList.add('entered');
+                    var hint = document.querySelector('.loading-hint.card-fly-in');
+                    if (hint) hint.classList.add('entered');
                 }, 350);
 
-                // 页脚：延迟 550ms 淡入（最后出现）
+                // 页脚：延迟 550ms 淡入
                 setTimeout(function () {
                     var footer = document.querySelector('.bottom-inscription.fly-in');
                     if (footer) footer.classList.add('entered');
@@ -706,9 +1078,10 @@
             // 页面加载完成后初始化
             // =====================================================
             document.addEventListener('DOMContentLoaded', function () {
-                initUtterances();
-                initSendButton();
-                initEntranceAnimations();
+                initUtterances();        // 提前加载 Utterances（在隐藏的弹窗里）
+                initSendButton();        // 绑定发送按钮 → 弹窗
+                initEntranceAnimations(); // 入场动画
+                loadComments();          // 拉取评论并渲染卡片
             });
 
         })();
