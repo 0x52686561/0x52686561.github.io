@@ -89,14 +89,15 @@
             z-index: 5;
         }
 
-        /* 卡片内纯洁印记装饰 */
+        /* 卡片内纯洁印记装饰：贴在卡片右侧，不透明 */
         .card-seal {
             position: absolute;
             max-width: 84px;               /* 不超过头像两倍高度(42px * 2) */
             max-height: 84px;
             object-fit: contain;           /* 保持原比例 */
             pointer-events: none;
-            opacity: 1;
+            opacity: 1;                    /* 完全不透明 */
+            right: 8px;                     /* 固定在卡片右侧 */
             z-index: 1;
         }
 
@@ -264,40 +265,41 @@
             min-height: 160px;
 
             /* 双层金色边框：外层 2px + 内层 2px，中间有间距 */
-            border: 2px solid #e1b861;
+            border: 0.1px solid #e1b861;
             box-shadow: inset 0 0 0 6px transparent,
                         inset 0 0 0 7px #e1b861;
         }
 
-        /* 左上角装饰：太阳+星星 */
+        /* 左上角装饰：紧贴边框内侧 */
         .comment-card::before {
             content: '';
             position: absolute;
-            top: 8px;
-            left: 8px;
+            top: 0;
+            left: 0;
             width: 200px;
             height: 200px;
             background-image: url('corner.jpg');
-            background-size: contain;
+            background-size: 200px 200px;
             background-repeat: no-repeat;
             background-position: top left;
             pointer-events: none;
             z-index: 1;
         }
 
-        /* 右下角装饰：同一张图，旋转180度 */
+        /* 右下角装饰：同一张图，旋转180度，紧贴右下角 */
         .comment-card::after {
             content: '';
             position: absolute;
-            bottom: 8px;
-            right: 8px;
+            bottom: 0;
+            right: 0;
             width: 200px;
             height: 200px;
             background-image: url('corner.jpg');
-            background-size: contain;
+            background-size: 200px 200px;
             background-repeat: no-repeat;
             background-position: bottom right;
             transform: rotate(180deg);
+            transform-origin: center;
             pointer-events: none;
             z-index: 1;
         }
@@ -509,6 +511,78 @@
 
         .utterances-close:hover {
             color: #111;
+        }
+
+        /* ===== 回复弹窗专用样式 ===== */
+        .reply-original {
+            background: rgba(0, 0, 0, 0.04);
+            border-left: 3px solid #e1b861;
+            padding: 12px 16px;
+            margin: 0 0 16px;
+            text-align: left;
+            border-radius: 0 4px 4px 0;
+            font-size: 13px;
+        }
+
+        .reply-original .reply-original-author {
+            font-weight: 700;
+            color: #6b5330;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .reply-original .reply-original-body {
+            color: #555;
+            line-height: 1.6;
+            max-height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .reply-input {
+            width: 100%;
+            min-height: 100px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 15px;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+            background: #fff;
+            color: #222;
+            text-align: left;
+            transition: border-color 0.2s;
+        }
+
+        .reply-input:focus {
+            border-color: #e1b861;
+        }
+
+        .reply-modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+        }
+
+        .reply-submit-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            transition: transform 0.2s;
+        }
+
+        .reply-submit-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .reply-submit-btn img {
+            height: 32px;
+            width: auto;
         }
 
         /* ===== 回复区（主留言下的回复列表） ===== */
@@ -774,6 +848,25 @@
             </div>
         </div>
 
+        <!-- ===== 回复弹窗 =====
+             点击"回复"按钮后弹出，显示原留言摘要 + 输入框 -->
+        <div id="replyModal" class="utterances-modal" style="display:none;">
+            <div class="utterances-modal-content">
+                <button class="utterances-close" id="replyClose" aria-label="关闭">✕</button>
+                <h3 class="utterances-title"><span class="scale-x">回 复 祷 文</span></h3>
+                <!-- 被回复的原留言摘要 -->
+                <div id="replyOriginal" class="reply-original"></div>
+                <!-- 回复输入框 -->
+                <textarea id="replyInput" class="reply-input" placeholder="写下你的回复..."></textarea>
+                <div class="reply-modal-footer">
+                    <span class="utterances-hint">回复内容将自动引用原作者</span>
+                    <button class="reply-submit-btn" id="replySubmit" title="祈祷">
+                        <img src="../iris.png" alt="祈祷">
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- ===== 页脚铭文（和首页同格式横条）===== -->
         <footer class="bottom-inscription fly-in">
             <p class="inscription-text">
@@ -885,7 +978,7 @@
             function generateCardSeals() {
                 var cards = document.querySelectorAll('.comment-card');
                 cards.forEach(function(card) {
-                    var sealCount = Math.floor(Math.random() * 3) + 1;
+                    var sealCount = Math.floor(Math.random() * 2) + 1;   // 1~2个印记
                     for (var i = 0; i < sealCount; i++) {
                         var img = document.createElement('img');
                         img.className = 'card-seal';
@@ -893,15 +986,13 @@
                         img.alt = '';
                         img.draggable = false;
 
-                        var side = Math.random() < 0.5 ? 'left' : 'right';
-                        var top = randomBetween(0, 80);
+                        // 只贴在卡片右侧，垂直位置随机
+                        var top = randomBetween(5, 75);
                         var size = randomBetween(40, 84);
 
-                        img.style[side] = '-10px';
                         img.style.top = top + '%';
                         img.style.width = size + 'px';
-                        img.style.transform = 'rotate(' + randomBetween(-30, 30) + 'deg)';
-                        img.style.opacity = 1;
+                        img.style.transform = 'rotate(' + randomBetween(-15, 15) + 'deg)';
 
                         card.appendChild(img);
                     }
@@ -933,7 +1024,6 @@
                 var avatarUrl  = comment.user.avatar_url;
                 var body       = comment.body || '';
                 var time       = comment.created_at;
-                var htmlUrl    = comment.html_url;          // 该评论的 GitHub 页面地址
                 var views      = calculateViews(time);      // 阅览次数（根据时间计算）
 
                 // 卡片 HTML 模板
@@ -956,15 +1046,18 @@
                     //   正文
                     +   '<p class="comment-body">' + escapeHtml(body) + '</p>'
 
-                    //   操作栏：蜡烛阅览次数 + 回复（跳转到 Issue 页）
+                    //   操作栏：蜡烛阅览次数 + 回复（打开回复弹窗）
                     +   '<div class="comment-actions">'
                     +     '<span class="like-btn" title="祷文被阅览次数">'
                     +       '<span class="like-icon">🕯︎</span>'
                     +       '<span class="like-count">' + views + '</span>'
                     +     '</span>'
-                    +     '<a href="' + escapeHtml(htmlUrl) + '" target="_blank" rel="noopener" class="reply-btn" title="在 GitHub 上回复">'
+                    +     '<button type="button" class="reply-btn" title="回复此祷文"'
+                    +       ' data-author="' + escapeHtml(author) + '"'
+                    +       ' data-body="' + escapeHtml(body) + '"'
+                    +       '>'
                     +       '<span>🗨︎</span>'
-                    +     '</a>'
+                    +     '</button>'
                     +   '</div>'
                     + '</article>';
             }
@@ -997,6 +1090,9 @@
 
                 // 生成卡片上的纯洁印记装饰
                 generateCardSeals();
+
+                // 绑定所有回复按钮的点击事件
+                bindReplyButtons();
 
                 // 逐个触发"飞入"动画（每个卡片延迟 60ms）
                 var cards = container.querySelectorAll('.card-fly-in');
@@ -1125,11 +1221,104 @@
                         if (e.target === modal) closeUtterancesModal();
                     });
                 }
+            }
 
-                // 按 Esc 关闭弹窗
-                document.addEventListener('keydown', function (e) {
-                    if (e.key === 'Escape') closeUtterancesModal();
+            // =====================================================
+            // 回复弹窗
+            //   点击回复按钮 → 显示原留言摘要 + 输入框
+            //   提交后自动加上 @原作者 引用，复制到剪贴板，打开 Utterances 发布
+            // =====================================================
+
+            // 当前被回复的留言信息
+            var replyTarget = { author: '', body: '' };
+
+            // 绑定所有回复按钮的点击事件
+            function bindReplyButtons() {
+                var btns = document.querySelectorAll('.reply-btn');
+                btns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        replyTarget.author = btn.getAttribute('data-author') || '';
+                        replyTarget.body   = btn.getAttribute('data-body') || '';
+                        openReplyModal();
+                    });
                 });
+            }
+
+            function openReplyModal() {
+                var modal = document.getElementById('replyModal');
+                var originalBox = document.getElementById('replyOriginal');
+                var input = document.getElementById('replyInput');
+                if (!modal) return;
+
+                // 显示原留言摘要
+                if (originalBox) {
+                    originalBox.innerHTML = ''
+                        + '<div class="reply-original-author">@' + escapeHtml(replyTarget.author) + '</div>'
+                        + '<div class="reply-original-body">' + escapeHtml(replyTarget.body) + '</div>';
+                }
+
+                // 清空输入框
+                if (input) input.value = '';
+
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeReplyModal() {
+                var modal = document.getElementById('replyModal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            }
+
+            function initReplyModal() {
+                var closeBtn = document.getElementById('replyClose');
+                var submitBtn = document.getElementById('replySubmit');
+                var input = document.getElementById('replyInput');
+                var modal = document.getElementById('replyModal');
+
+                // 关闭按钮
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function () {
+                        closeReplyModal();
+                    });
+                }
+
+                // 点遮罩关闭
+                if (modal) {
+                    modal.addEventListener('click', function (e) {
+                        if (e.target === modal) closeReplyModal();
+                    });
+                }
+
+                // 提交回复：把内容加上 @原作者 引用，复制到剪贴板，打开 Utterances
+                if (submitBtn) {
+                    submitBtn.addEventListener('click', function () {
+                        var text = input ? input.value.trim() : '';
+                        if (!text) {
+                            alert('请先写下你的回复。');
+                            return;
+                        }
+
+                        // 自动加上引用格式：> @原作者 \n 回复内容
+                        var replyText = '> @' + replyTarget.author + '\n\n' + text;
+
+                        if (navigator.clipboard) {
+                            navigator.clipboard.writeText(replyText).then(function () {
+                                alert('回复已复制到剪贴板。\n请在弹出的窗口中登录 GitHub 后粘贴发布。');
+                                closeReplyModal();
+                                openUtterancesModal();
+                            }).catch(function () {
+                                closeReplyModal();
+                                openUtterancesModal();
+                            });
+                        } else {
+                            closeReplyModal();
+                            openUtterancesModal();
+                        }
+                    });
+                }
             }
 
             // =====================================================
@@ -1163,8 +1352,17 @@
             document.addEventListener('DOMContentLoaded', function () {
                 initUtterances();
                 initSendButton();
+                initReplyModal();        // 初始化回复弹窗
                 initEntranceAnimations();
                 loadComments();
+
+                // 按 Esc 关闭任意弹窗
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        closeUtterancesModal();
+                        closeReplyModal();
+                    }
+                });
             });
 
         })();
