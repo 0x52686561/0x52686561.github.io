@@ -472,6 +472,7 @@
             function openBook(bookId) {
                 window.location.href = `reader.html?id=${bookId}`;
             }
+            window.openBook = openBook;
 
             function openLightbox(image, title, author, desc) {
                 const lightbox = document.getElementById('lightbox');
@@ -488,6 +489,7 @@
                 lightbox.classList.add('active');
                 document.body.style.overflow = 'hidden';
             }
+            window.openLightbox = openLightbox;
 
             function closeLightbox(event) {
                 if (!event || event.target === document.getElementById('lightbox')) {
@@ -496,6 +498,7 @@
                     document.body.style.overflow = '';
                 }
             }
+            window.closeLightbox = closeLightbox;
 
             function escapeHtml(text) {
                 const div = document.createElement('div');
