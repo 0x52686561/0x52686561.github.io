@@ -93,7 +93,7 @@
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
         }
 
-        /* 卡片内纯洁印记装饰：贴在卡片右侧边框区域，不透明，层级最高 */
+        /* 卡片内纯洁印记装饰：贴在卡片右侧，不透明，层级最高 */
         .card-seal {
             position: absolute;
             max-width: 84px;
@@ -101,7 +101,7 @@
             object-fit: contain;
             pointer-events: none;
             opacity: 1;
-            right: -120px;
+            right: 8px;
             z-index: 10;
         }
 
@@ -807,7 +807,7 @@
             }
             /* 移动端纯洁印记位置和大小调整 */
             .card-seal {
-                right: -60px;
+                right: 4px;
                 max-width: 56px;
                 max-height: 56px;
             }
