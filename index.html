@@ -562,8 +562,8 @@
                     lastTriggerEl = document.activeElement;
                 }
 
-                // ===== 特殊处理："大祈祷室"点击后3秒内淡化并自动跳转 =====
-                // 流程：打开弹窗 → 1秒后开始2秒淡出动画 → 3秒后跳转到留言页
+                // ===== 特殊处理："大祈祷室"和"圣典与手稿"点击后3秒内淡化并自动跳转 =====
+                // 流程：打开弹窗 → 1秒后开始2秒淡出动画 → 3秒后跳转到对应页面
                 if (id === 'guestbook') {
                     // 1秒后给弹窗加上 .fading-out 类，触发2秒的淡出动画
                     jumpTimers.push(setTimeout(function () {
@@ -573,6 +573,17 @@
                     // 3秒后跳转到留言页（1秒等待 + 2秒淡出 = 3秒）
                     jumpTimers.push(setTimeout(function () {
                         window.location.href = 'guestbook/guestbook.html';
+                    }, 3000));
+                }
+                if (id === 'novel') {
+                    // 1秒后给弹窗加上 .fading-out 类，触发2秒的淡出动画
+                    jumpTimers.push(setTimeout(function () {
+                        overlay.classList.add('fading-out');
+                    }, 1000));
+
+                    // 3秒后跳转到圣典与手稿页（1秒等待 + 2秒淡出 = 3秒）
+                    jumpTimers.push(setTimeout(function () {
+                        window.location.href = 'works/works.html';
                     }, 3000));
                 }
             }
