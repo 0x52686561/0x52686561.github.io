@@ -11,7 +11,7 @@
     <!-- 预连接字体服务器，加速加载 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&family=UnifrakturMaguntia&display=swap">
 
     <style>
         /* ===== 全局重置 ===== */
@@ -93,16 +93,16 @@
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
         }
 
-        /* 卡片内纯洁印记装饰：贴在卡片右侧，不透明 */
+        /* 卡片内纯洁印记装饰：贴在卡片右侧边框区域，不透明，层级最高 */
         .card-seal {
             position: absolute;
-            max-width: 84px;               /* 不超过头像两倍高度(42px * 2) */
+            max-width: 84px;
             max-height: 84px;
-            object-fit: contain;           /* 保持原比例 */
+            object-fit: contain;
             pointer-events: none;
-            opacity: 1;                    /* 完全不透明 */
-            right: 8px;                     /* 固定在卡片右侧 */
-            z-index: 1;
+            opacity: 1;
+            right: -120px;
+            z-index: 10;
         }
 
         /* ===== 页面标题 ===== */
@@ -128,18 +128,21 @@
             color: #9a6b2f;
         }
 
-        /* 标题两侧的装饰线 */
-        .page-header::before,
-        .page-header::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 60px;
-            height: 1px;
-            background: #9a6b2f;
+        /* 英文字母使用 UnifrakturMaguntia 字体，宽度80% */
+        .comment-author,
+        .comment-time,
+        .reply-author,
+        .reply-time,
+        .composer-hint,
+        .back-home,
+        .utterances-title,
+        .utterances-hint {
+            font-family: 'UnifrakturMaguntia', 'Noto Serif SC', serif;
+            font-size: 21px;
+            transform: scaleX(0.8);
+            transform-origin: center;
+            display: inline-block;
         }
-        .page-header::before { left: 0; }
-        .page-header::after  { right: 0; }
 
         /* 返回首页链接 */
         .back-home {
@@ -159,10 +162,7 @@
 
         /* ===== 输入区 ===== */
         .composer {
-            background-image: url('input-bg.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            background: rgba(255, 250, 240, 0.9);
             border: 1px solid #9a6b2f;
             border-radius: 4px;
             padding: 16px;
@@ -278,22 +278,59 @@
             display: none;
         }
 
-        /* 单条留言卡片
-           使用 border-image 九宫格：
-           原图 1258×661，切片：左右各236px、上下各219px
-           slice 值用原图像素，border-image-width 控制显示大小 */
+        /* 单条留言卡片：九宫格边框 + 大角落装饰
+           边框宽度20px保持卡片紧凑，切片219 236保持源图角落细节 */
         .comment-card {
-            padding: 24px 28px;
             position: relative;
-            min-height: 200px;
+            min-height: 100px;
+            padding: 16px 20px;
+            background-color: rgba(255, 250, 240, 0.95);
 
-            /* border-width 留够空间给边框 */
-            border: 60px 70px solid transparent;
-            /* border-image: 切片值(原图像素) fill 填充中间 / 显示宽度(上下 左右) / outset 0 / 拉伸方式 */
-            border-image: url('comment-bg.jpg') 219 236 fill / 60px 70px / 0 stretch;
+            border-style: solid;
+            border-width: 20px;
+
+            border-image-source: url('comment-bg.jpg');
+            border-image-slice: 219 236;
+            border-image-width: 20px;
+            border-image-repeat: round;
+            border-image-outset: 0;
         }
 
-        /* 卡片内内容层级比装饰高，不被遮挡 */
+        /* 左下角角落装饰：corner.jpg 垂直翻转 */
+        .comment-card::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 120px;
+            height: 120px;
+            background-image: url('corner.jpg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom left;
+            transform: scaleY(-1);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* 右上角角落装饰：corner.jpg 水平翻转 */
+        .comment-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 120px;
+            background-image: url('corner.jpg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: top right;
+            transform: scaleX(-1);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* 卡片内内容容器：位于九宫格中间区域 */
         .comment-header,
         .comment-body,
         .comment-actions,
@@ -301,6 +338,7 @@
         .reply-composer {
             position: relative;
             z-index: 2;
+            padding: 0 8px;
         }
 
         /* 加载中提示 */
@@ -751,10 +789,6 @@
                 font-size: 24px;
                 letter-spacing: 6px;
             }
-            .page-header::before,
-            .page-header::after {
-                width: 30px;
-            }
             .back-home {
                 top: 14px;
                 left: 14px;
@@ -764,8 +798,23 @@
                 padding: 12px;
                 top: 10px;
             }
+            /* 移动端：九宫格边框缩小到10px */
             .comment-card {
-                padding: 14px 16px;
+                border-width: 10px;
+                border-image-width: 10px;
+                padding: 12px 14px;
+            }
+            /* 移动端角落装饰缩小 */
+            .comment-card::before,
+            .comment-card::after {
+                width: 80px;
+                height: 80px;
+            }
+            /* 移动端纯洁印记位置和大小调整 */
+            .card-seal {
+                right: -60px;
+                max-width: 56px;
+                max-height: 56px;
             }
             .inscription-text {
                 font-size: 14px;
@@ -955,27 +1004,61 @@
                 return Math.random() * (max - min) + min;
             }
 
-            // 在每张卡片右侧随机贴1-2个纯洁印记
+            // 在每张卡片右侧随机贴1-3个纯洁印记，重叠不超过40%
             function generateCardSeals() {
                 var cards = document.querySelectorAll('.comment-card');
                 cards.forEach(function(card) {
-                    var sealCount = Math.floor(Math.random() * 2) + 1;   // 1~2个印记
+                    var sealCount = Math.floor(Math.random() * 3) + 1;
+                    var placedSeals = [];
+
                     for (var i = 0; i < sealCount; i++) {
-                        var img = document.createElement('img');
-                        img.className = 'card-seal';
-                        img.src = randomPick(SEAL_IMAGES);
-                        img.alt = '';
-                        img.draggable = false;
+                        var maxAttempts = 20;
+                        var attempts = 0;
+                        var validPosition = false;
+                        var finalTop, finalSize, finalRotation;
 
-                        // 只贴在卡片右侧，垂直位置随机
-                        var top = randomBetween(5, 75);
-                        var size = randomBetween(40, 84);
+                        while (!validPosition && attempts < maxAttempts) {
+                            attempts++;
 
-                        img.style.top = top + '%';
-                        img.style.width = size + 'px';
-                        img.style.transform = 'rotate(' + randomBetween(-15, 15) + 'deg)';
+                            var top = randomBetween(10, 80);
+                            var size = randomBetween(40, 84);
+                            var rotation = randomBetween(-15, 15);
 
-                        card.appendChild(img);
+                            var isOverlapping = false;
+                            for (var j = 0; j < placedSeals.length; j++) {
+                                var existing = placedSeals[j];
+
+                                var overlapY = Math.min(top + size/2, existing.top + existing.size/2) - Math.max(top - size/2, existing.top - existing.size/2);
+                                var overlapRatio = overlapY / Math.min(size, existing.size);
+
+                                if (overlapRatio > 0.4) {
+                                    isOverlapping = true;
+                                    break;
+                                }
+                            }
+
+                            if (!isOverlapping) {
+                                validPosition = true;
+                                finalTop = top;
+                                finalSize = size;
+                                finalRotation = rotation;
+                                placedSeals.push({ top: top, size: size });
+                            }
+                        }
+
+                        if (validPosition) {
+                            var img = document.createElement('img');
+                            img.className = 'card-seal';
+                            img.src = randomPick(SEAL_IMAGES);
+                            img.alt = '';
+                            img.draggable = false;
+
+                            img.style.top = finalTop + '%';
+                            img.style.width = finalSize + 'px';
+                            img.style.transform = 'rotate(' + finalRotation + 'deg)';
+
+                            card.appendChild(img);
+                        }
                     }
                 });
             }
@@ -1019,7 +1102,7 @@
                     +       '</div>'
                     +     '</a>'
                     +     '<div class="comment-meta">'
-                    +       '<p class="comment-author"><span class="scale-x">' + escapeHtml(author) + '</span></p>'
+                    +       '<p class="comment-author">' + escapeHtml(author) + '</p>'
                     +       '<span class="comment-time" title="' + formatTime(time) + '">' + relativeTime(time) + '</span>'
                     +     '</div>'
                     +   '</div>'
@@ -1076,6 +1159,7 @@
                 bindReplyButtons();
 
                 // 用 IntersectionObserver 监听卡片是否进入视口，实现滚动淡入淡出
+                var scrollContainer = document.querySelector('.comment-list');
                 var observer = new IntersectionObserver(function (entries) {
                     entries.forEach(function (entry) {
                         if (entry.isIntersecting) {
@@ -1086,7 +1170,7 @@
                         }
                     });
                 }, {
-                    root: container,           // 以留言列表为视口
+                    root: scrollContainer,     // 以可滚动的留言列表为视口
                     threshold: 0.1,            // 卡片有10%进入视口就触发
                     rootMargin: '0px 0px -10% 0px'   // 稍微提前触发
                 });
