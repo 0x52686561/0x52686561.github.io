@@ -142,6 +142,13 @@
             transform: scaleX(0.8);
             transform-origin: center;
             display: inline-block;
+            color: #9a6b2f;
+        }
+
+        /* 提示文字：16px */
+        .utterances-hint,
+        .composer-hint {
+            font-size: 16px;
         }
 
         /* 返回首页链接 */
@@ -149,7 +156,7 @@
             position: absolute;
             top: 20px;
             left: 24px;
-            font-size: 13px;
+            font-size: 16px;
             letter-spacing: 2px;
             color: #9a6b2f;
             text-decoration: none;
@@ -202,8 +209,6 @@
         }
 
         .composer-hint {
-            font-size: 12px;
-            color: #999;
             letter-spacing: 1px;
         }
 
@@ -213,11 +218,11 @@
             border: none;
             cursor: pointer;
             padding: 4px;
-            transition: transform 0.2s;
+            transition: opacity 0.2s;
         }
 
         .send-btn:hover {
-            transform: scale(1.1);
+            opacity: 0.7;
         }
 
         .send-btn img {
@@ -509,13 +514,11 @@
 
         .utterances-title {
             margin: 0 0 8px;
-            font-size: 22px;
             letter-spacing: 8px;
             color: #9a6b2f;
         }
 
         .utterances-hint {
-            font-size: 12px;
             color: #9a6b2f;
             letter-spacing: 2px;
             margin: 0 0 16px;
@@ -837,7 +840,7 @@
         <!-- 页面标题 -->
         <header class="page-header fly-in">
             <h1><span class="scale-x">大祈祷室</span></h1>
-            <div class="subtitle"><span class="scale-x">在此向帝皇倾诉，留下你的印记</span></div>
+            <div class="subtitle"><span class="scale-x" style="font-size: 16px">在此向帝皇倾诉，留下你的印记</span></div>
         </header>
 
         <!-- ===== 顶部发帖区 ===== -->
