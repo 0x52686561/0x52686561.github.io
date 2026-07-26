@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阅读器 | 神圣殉道录</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&display=swap">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            font-family: 'Noto Serif SC', serif;
+            transition: background-color 0.3s;
+        }
+
+        body.light-mode {
+            background-color: #f5f5f5;
+            color: #111;
+        }
+
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #ddd;
+        }
+
+        body.sepia-mode {
+            background-color: #f4ecd8;
+            color: #333;
+        }
+
+        .scale-x {
+            transform: scaleX(0.8);
+            transform-origin: center;
+            display: inline-block;
+        }
+
+        .reader-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid #ddd;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .dark-mode .reader-header {
+            background: rgba(30, 30, 30, 0.95);
+            border-bottom-color: #444;
+        }
+
+        .sepia-mode .reader-header {
+            background: rgba(244, 236, 216, 0.95);
+            border-bottom-color: #ccc;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            font-size: 14px;
+            letter-spacing: 2px;
+            color: #111;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .dark-mode .back-btn {
+            color: #ddd;
+        }
+
+        .back-btn:hover {
+            border-bottom-color: currentColor;
+        }
+
+        .book-title {
+            font-size: 16px;
+            letter-spacing: 3px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 300px;
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-info {
+            font-size: 14px;
+            letter-spacing: 2px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .nav-btn {
+            background: none;
+            border: 1px solid #333;
+            padding: 6px 16px;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 14px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .dark-mode .nav-btn {
+            border-color: #888;
+            color: #ddd;
+        }
+
+        .nav-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        .dark-mode .nav-btn:hover {
+            background: #888;
+            color: #111;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 6px 10px;
+            transition: opacity 0.2s;
+            color: #333;
+        }
+
+        .dark-mode .action-btn {
+            color: #ddd;
+        }
+
+        .action-btn:hover {
+            opacity: 0.6;
+        }
+
+        .download-btn {
+            font-size: 14px;
+            letter-spacing: 2px;
+            color: #111;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .dark-mode .download-btn {
+            color: #ddd;
+        }
+
+        .download-btn:hover {
+            border-bottom-color: currentColor;
+        }
+
+        .reader-container {
+            margin-top: 60px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .pdf-wrapper {
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 800px;
+            width: 100%;
+            min-height: calc(100vh - 100px);
+        }
+
+        .dark-mode .pdf-wrapper {
+            background: #2a2a2a;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .sepia-mode .pdf-wrapper {
+            background: #fffef0;
+        }
+
+        #pdfContainer {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .pdf-page {
+            margin: 0 auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .dark-mode .pdf-page {
+            filter: brightness(0.8) contrast(1.1);
+        }
+
+        .toolbar-overlay {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            border-top: 1px solid #ddd;
+            padding: 16px 20px;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .dark-mode .toolbar-overlay {
+            background: rgba(30, 30, 30, 0.98);
+            border-top-color: #444;
+        }
+
+        .sepia-mode .toolbar-overlay {
+            background: rgba(244, 236, 216, 0.98);
+            border-top-color: #ccc;
+        }
+
+        .toolbar-overlay.active {
+            display: block;
+        }
+
+        .toolbar-section {
+            margin-bottom: 12px;
+        }
+
+        .toolbar-title {
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .toolbar-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-btn {
+            background: none;
+            border: 1px solid #333;
+            padding: 8px 16px;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 14px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .dark-mode .toolbar-btn {
+            border-color: #888;
+            color: #ddd;
+        }
+
+        .toolbar-btn.active,
+        .toolbar-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        .dark-mode .toolbar-btn.active,
+        .dark-mode .toolbar-btn:hover {
+            background: #888;
+            color: #111;
+        }
+
+        .font-size-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .font-size-btn {
+            background: none;
+            border: 1px solid #333;
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .dark-mode .font-size-btn {
+            border-color: #888;
+            color: #ddd;
+        }
+
+        .font-size-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        .dark-mode .font-size-btn:hover {
+            background: #888;
+            color: #111;
+        }
+
+        .font-size-display {
+            min-width: 60px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .bookmarks-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        .dark-mode .bookmarks-list {
+            border-color: #444;
+        }
+
+        .bookmark-item {
+            padding: 8px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dark-mode .bookmark-item {
+            border-bottom-color: #444;
+        }
+
+        .bookmark-item:last-child {
+            border-bottom: none;
+        }
+
+        .bookmark-item:hover {
+            background: #f0f0f0;
+        }
+
+        .dark-mode .bookmark-item:hover {
+            background: #444;
+        }
+
+        .bookmark-delete {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .bookmark-delete:hover {
+            color: #c00;
+        }
+
+        .toc-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            border-left: 1px solid #ddd;
+            z-index: 1001;
+            padding: 80px 20px 20px;
+            overflow-y: auto;
+            backdrop-filter: blur(4px);
+        }
+
+        .dark-mode .toc-overlay {
+            background: rgba(30, 30, 30, 0.98);
+            border-left-color: #444;
+        }
+
+        .sepia-mode .toc-overlay {
+            background: rgba(244, 236, 216, 0.98);
+            border-left-color: #ccc;
+        }
+
+        .toc-overlay.active {
+            display: block;
+        }
+
+        .toc-header {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toc-title {
+            font-size: 18px;
+            letter-spacing: 4px;
+            font-weight: bold;
+        }
+
+        .toc-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .toc-close:hover {
+            color: #111;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .dark-mode .toc-item {
+            border-bottom-color: #444;
+        }
+
+        .toc-item:hover {
+            background: #f5f5f5;
+            padding-left: 10px;
+        }
+
+        .dark-mode .toc-item:hover {
+            background: #444;
+        }
+
+        .toc-item.level-1 { padding-left: 0; }
+        .toc-item.level-2 { padding-left: 16px; }
+        .toc-item.level-3 { padding-left: 32px; }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .dark-mode .loading-overlay {
+            background: rgba(30, 30, 30, 0.9);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #ddd;
+            border-top-color: #333;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .dark-mode .loading-spinner {
+            border-color: #444;
+            border-top-color: #ddd;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            font-size: 14px;
+            letter-spacing: 3px;
+            color: #666;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background: #ddd;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .dark-mode .progress-bar {
+            background: #444;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #333;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .dark-mode .progress-fill {
+            background: #ddd;
+        }
+
+        @media (max-width: 768px) {
+            .reader-header {
+                padding: 10px 12px;
+            }
+            .book-title {
+                max-width: 150px;
+                font-size: 14px;
+            }
+            .nav-btn {
+                padding: 4px 10px;
+                font-size: 12px;
+            }
+            .page-info {
+                min-width: 80px;
+                font-size: 12px;
+            }
+            .pdf-wrapper {
+                padding: 10px;
+            }
+            .toc-overlay {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body class="light-mode">
+    <div class="reader-header">
+        <div class="header-left">
+            <a href="works.html" class="back-btn"><span class="scale-x">返回圣典</span></a>
+            <span class="book-title" id="bookTitle"></span>
+        </div>
+
+        <div class="header-center">
+            <button class="nav-btn" id="prevBtn">上一页</button>
+            <span class="page-info" id="pageInfo">1 / 1</span>
+            <button class="nav-btn" id="nextBtn">下一页</button>
+        </div>
+
+        <div class="header-right">
+            <button class="action-btn" id="tocBtn" title="目录">☰</button>
+            <button class="action-btn" id="bookmarkBtn" title="添加书签">🔖</button>
+            <button class="action-btn" id="settingsBtn" title="设置">⚙️</button>
+            <a href="#" class="download-btn" id="downloadLink" download>下载</a>
+        </div>
+    </div>
+
+    <div class="reader-container">
+        <div class="pdf-wrapper">
+            <div id="pdfContainer"></div>
+        </div>
+    </div>
+
+    <div class="toolbar-overlay" id="toolbarOverlay">
+        <div class="toolbar-section">
+            <div class="toolbar-title">主题</div>
+            <div class="toolbar-buttons">
+                <button class="toolbar-btn active" data-theme="light">浅色</button>
+                <button class="toolbar-btn" data-theme="sepia">羊皮纸</button>
+                <button class="toolbar-btn" data-theme="dark">深色</button>
+            </div>
+        </div>
+        <div class="toolbar-section">
+            <div class="toolbar-title">字号</div>
+            <div class="font-size-controls">
+                <button class="font-size-btn" id="fontDecBtn">-</button>
+                <span class="font-size-display" id="fontSizeDisplay">100%</span>
+                <button class="font-size-btn" id="fontIncBtn">+</button>
+            </div>
+        </div>
+        <div class="toolbar-section">
+            <div class="toolbar-title">书签</div>
+            <div class="bookmarks-list" id="bookmarksList">
+                <div style="text-align:center;color:#999;padding:10px;">暂无书签</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toc-overlay" id="tocOverlay">
+        <div class="toc-header">
+            <span class="toc-title">目录</span>
+            <button class="toc-close" id="tocClose">×</button>
+        </div>
+        <ul class="toc-list" id="tocList"></ul>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">加载中...</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            'use strict';
+
+            let pdfDoc = null;
+            let currentPage = 1;
+            let totalPages = 0;
+            let bookId = '';
+            let bookData = null;
+            let scale = 1;
+
+            const BOOKS_URL = 'books.json';
+
+            function getUrlParam(name) {
+                const params = new URLSearchParams(window.location.search);
+                return params.get(name);
+            }
+
+            async function loadBookData() {
+                try {
+                    const response = await fetch(BOOKS_URL);
+                    const books = await response.json();
+                    bookId = getUrlParam('id');
+                    bookData = books.find(b => b.id === bookId);
+
+                    if (!bookData) {
+                        alert('未找到书籍');
+                        window.location.href = 'works.html';
+                        return;
+                    }
+
+                    document.getElementById('bookTitle').textContent = bookData.title;
+                    document.getElementById('downloadLink').href = bookData.file;
+                } catch (error) {
+                    console.error('加载书籍数据失败:', error);
+                }
+            }
+
+            async function loadPDF() {
+                if (!bookData) return;
+
+                try {
+                    const loadingTask = pdfjsLib.getDocument({
+                        url: bookData.file,
+                        cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/cmaps/',
+                        cMapPacked: true
+                    });
+
+                    loadingTask.onProgress = function({ loaded, total }) {
+                        const percent = Math.round((loaded / total) * 100);
+                        document.getElementById('progressFill').style.width = percent + '%';
+                    };
+
+                    pdfDoc = await loadingTask.promise;
+                    totalPages = pdfDoc.numPages;
+                    document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages}`;
+
+                    const savedPage = localStorage.getItem(`reader_page_${bookId}`);
+                    if (savedPage) {
+                        currentPage = parseInt(savedPage);
+                    }
+
+                    await renderPage(currentPage);
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                } catch (error) {
+                    console.error('加载PDF失败:', error);
+                    alert('PDF加载失败，请检查文件路径');
+                }
+            }
+
+            async function renderPage(pageNum) {
+                if (!pdfDoc) return;
+
+                const page = await pdfDoc.getPage(pageNum);
+                const container = document.getElementById('pdfContainer');
+                container.innerHTML = '';
+
+                const viewport = page.getViewport({ scale: scale });
+                const canvas = document.createElement('canvas');
+                canvas.className = 'pdf-page';
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                const ctx = canvas.getContext('2d');
+                const renderTask = page.render({
+                    canvasContext: ctx,
+                    viewport: viewport
+                });
+
+                await renderTask.promise;
+                container.appendChild(canvas);
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages}`;
+                saveProgress();
+            }
+
+            function saveProgress() {
+                localStorage.setItem(`reader_page_${bookId}`, currentPage.toString());
+            }
+
+            function goToPage(pageNum) {
+                if (pageNum < 1 || pageNum > totalPages) return;
+                currentPage = pageNum;
+                renderPage(currentPage);
+            }
+
+            function addBookmark() {
+                const bookmarks = getBookmarks();
+                bookmarks.push({
+                    page: currentPage,
+                    title: `第 ${currentPage} 页`,
+                    date: new Date().toLocaleDateString()
+                });
+                localStorage.setItem(`reader_bookmarks_${bookId}`, JSON.stringify(bookmarks));
+                renderBookmarks();
+                alert('书签已添加');
+            }
+
+            function getBookmarks() {
+                const stored = localStorage.getItem(`reader_bookmarks_${bookId}`);
+                return stored ? JSON.parse(stored) : [];
+            }
+
+            function renderBookmarks() {
+                const bookmarks = getBookmarks();
+                const list = document.getElementById('bookmarksList');
+
+                if (bookmarks.length === 0) {
+                    list.innerHTML = '<div style="text-align:center;color:#999;padding:10px;">暂无书签</div>';
+                    return;
+                }
+
+                list.innerHTML = bookmarks.map((bm, index) => `
+                    <div class="bookmark-item" onclick="goToPage(${bm.page})">
+                        <span>${bm.title}</span>
+                        <span class="bookmark-delete" onclick="event.stopPropagation();deleteBookmark(${index})">删除</span>
+                    </div>
+                `).join('');
+            }
+
+            function deleteBookmark(index) {
+                const bookmarks = getBookmarks();
+                bookmarks.splice(index, 1);
+                localStorage.setItem(`reader_bookmarks_${bookId}`, JSON.stringify(bookmarks));
+                renderBookmarks();
+            }
+
+            async function loadTOC() {
+                if (!pdfDoc) return;
+
+                const list = document.getElementById('tocList');
+                list.innerHTML = '';
+
+                try {
+                    const outlines = await pdfDoc.getOutline();
+                    if (!outlines || outlines.length === 0) {
+                        list.innerHTML = '<li class="toc-item">该PDF无目录</li>';
+                        return;
+                    }
+
+                    function addOutline(items, level) {
+                        items.forEach(item => {
+                            const li = document.createElement('li');
+                            li.className = `toc-item level-${level}`;
+                            li.textContent = item.title;
+                            li.onclick = () => {
+                                goToPage(item.dest.pageNum || 1);
+                                document.getElementById('tocOverlay').classList.remove('active');
+                            };
+                            list.appendChild(li);
+
+                            if (item.items) {
+                                addOutline(item.items, level + 1);
+                            }
+                        });
+                    }
+
+                    addOutline(outlines, 1);
+                } catch (error) {
+                    list.innerHTML = '<li class="toc-item">目录加载失败</li>';
+                }
+            }
+
+            function setTheme(theme) {
+                document.body.className = `${theme}-mode`;
+                localStorage.setItem('reader_theme', theme);
+
+                document.querySelectorAll('.toolbar-btn[data-theme]').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.theme === theme) btn.classList.add('active');
+                });
+            }
+
+            function adjustFontSize(delta) {
+                scale = Math.max(0.5, Math.min(2, scale + delta));
+                document.getElementById('fontSizeDisplay').textContent = Math.round(scale * 100) + '%';
+                localStorage.setItem(`reader_scale_${bookId}`, scale.toString());
+                renderPage(currentPage);
+            }
+
+            document.getElementById('prevBtn').addEventListener('click', () => goToPage(currentPage - 1));
+            document.getElementById('nextBtn').addEventListener('click', () => goToPage(currentPage + 1));
+
+            document.getElementById('tocBtn').addEventListener('click', () => {
+                document.getElementById('tocOverlay').classList.add('active');
+                loadTOC();
+            });
+
+            document.getElementById('tocClose').addEventListener('click', () => {
+                document.getElementById('tocOverlay').classList.remove('active');
+            });
+
+            document.getElementById('bookmarkBtn').addEventListener('click', addBookmark);
+
+            document.getElementById('settingsBtn').addEventListener('click', () => {
+                document.getElementById('toolbarOverlay').classList.toggle('active');
+            });
+
+            document.querySelectorAll('.toolbar-btn[data-theme]').forEach(btn => {
+                btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+            });
+
+            document.getElementById('fontDecBtn').addEventListener('click', () => adjustFontSize(-0.1));
+            document.getElementById('fontIncBtn').addEventListener('click', () => adjustFontSize(0.1));
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') goToPage(currentPage - 1);
+                if (e.key === 'ArrowRight') goToPage(currentPage + 1);
+                if (e.key === 'Escape') {
+                    document.getElementById('toolbarOverlay').classList.remove('active');
+                    document.getElementById('tocOverlay').classList.remove('active');
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (e.target === document.getElementById('toolbarOverlay')) {
+                    document.getElementById('toolbarOverlay').classList.remove('active');
+                }
+            });
+
+            window.goToPage = goToPage;
+            window.deleteBookmark = deleteBookmark;
+
+            async function init() {
+                await loadBookData();
+                const savedScale = localStorage.getItem(`reader_scale_${bookId}`);
+                if (savedScale) scale = parseFloat(savedScale);
+                document.getElementById('fontSizeDisplay').textContent = Math.round(scale * 100) + '%';
+
+                const savedTheme = localStorage.getItem('reader_theme');
+                if (savedTheme) setTheme(savedTheme);
+
+                renderBookmarks();
+                await loadPDF();
+            }
+
+            init();
+        })();
+    </script>
+</body>
+
+</html>
