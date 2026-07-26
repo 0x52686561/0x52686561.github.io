@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圣典与手稿 | 神圣殉道录</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&display=swap">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            background-color: #ffffff;
+            background-image: url('../bg.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            color: #111111;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .scale-x {
+            transform: scaleX(0.8);
+            transform-origin: center;
+            display: inline-block;
+        }
+
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 24px 60px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .page-header h1 {
+            font-size: clamp(28px, 4vw, 40px);
+            letter-spacing: 8px;
+            line-height: 1.5;
+            color: #111;
+            margin: 0 auto;
+            font-weight: bold;
+            max-width: 700px;
+        }
+
+        .back-home {
+            position: fixed;
+            top: 20px;
+            left: 24px;
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: #111;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+            z-index: 100;
+        }
+        .back-home:hover {
+            border-bottom-color: #111;
+        }
+
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 20px;
+            letter-spacing: 4px;
+            color: #666;
+            cursor: pointer;
+            padding: 8px 24px;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .tab-btn.active {
+            color: #111;
+            font-weight: bold;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 2px;
+            background-color: #111;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .waterfall-grid {
+            column-count: 4;
+            column-gap: 24px;
+        }
+
+        .waterfall-item {
+            break-inside: avoid;
+            margin-bottom: 24px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .waterfall-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .item-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+        }
+
+        .item-title {
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: #111;
+            margin: 0 0 4px;
+            font-weight: bold;
+        }
+
+        .item-date {
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: #666;
+            margin: 0;
+        }
+
+        .item-author {
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: #666;
+            margin: 4px 0;
+        }
+
+        .item-desc {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #444;
+            margin: 8px 0 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .placeholder-item {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px dashed #999;
+            text-align: center;
+            padding: 30px 12px;
+            cursor: default;
+        }
+
+        .placeholder-item:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .placeholder-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+
+        .placeholder-text {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .lightbox-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .lightbox-overlay.active {
+            display: flex;
+        }
+
+        .lightbox-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            position: relative;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 20px;
+            border: 1px solid #333;
+            overflow-y: auto;
+            max-height: 85vh;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 16px;
+            border: 1px solid #ddd;
+        }
+
+        .lightbox-info h3 {
+            font-size: 18px;
+            letter-spacing: 4px;
+            color: #111;
+            margin: 0 0 8px;
+        }
+
+        .lightbox-info p {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #444;
+            margin: 8px 0;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.2s;
+            border: none;
+            background: none;
+            padding: 0;
+        }
+
+        .lightbox-close:hover {
+            color: #111;
+        }
+
+        @media (max-width: 1024px) {
+            .waterfall-grid {
+                column-count: 3;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .waterfall-grid {
+                column-count: 2;
+                column-gap: 16px;
+            }
+            .page-wrapper {
+                padding: 60px 16px 60px;
+            }
+            .back-home {
+                top: 14px;
+                left: 14px;
+                font-size: 14px;
+            }
+            .tab-container {
+                gap: 20px;
+            }
+            .tab-btn {
+                font-size: 16px;
+                padding: 6px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .waterfall-grid {
+                column-count: 1;
+            }
+            .page-header h1 {
+                font-size: 22px;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../index.html" class="back-home"><span class="scale-x">返回首页</span></a>
+
+    <div class="page-wrapper">
+        <header class="page-header">
+            <h1><span class="scale-x">圣典与手稿</span></h1>
+        </header>
+
+        <div class="tab-container">
+            <button class="tab-btn active" data-tab="books">圣典</button>
+            <button class="tab-btn" data-tab="gallery">手稿</button>
+        </div>
+
+        <div id="books" class="tab-content active">
+            <div class="waterfall-grid" id="booksGrid"></div>
+        </div>
+
+        <div id="gallery" class="tab-content">
+            <div class="waterfall-grid" id="galleryGrid"></div>
+        </div>
+    </div>
+
+    <div id="lightbox" class="lightbox-overlay" onclick="closeLightbox(event)">
+        <div class="lightbox-content" role="dialog" aria-modal="true">
+            <button class="lightbox-close" onclick="closeLightbox(null)" aria-label="关闭灯箱">×</button>
+            <img id="lightboxImage" class="lightbox-image" src="" alt="">
+            <div class="lightbox-info">
+                <h3 id="lightboxTitle"></h3>
+                <p id="lightboxAuthor"></p>
+                <p id="lightboxDesc"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            'use strict';
+
+            const BOOKS_URL = 'books.json';
+            const GALLERY_URL = 'gallery.json';
+
+            async function loadBooks() {
+                try {
+                    const response = await fetch(BOOKS_URL);
+                    const books = await response.json();
+                    renderBooks(books);
+                } catch (error) {
+                    console.error('加载书籍数据失败:', error);
+                }
+            }
+
+            async function loadGallery() {
+                try {
+                    const response = await fetch(GALLERY_URL);
+                    const artworks = await response.json();
+                    renderGallery(artworks);
+                } catch (error) {
+                    console.error('加载画作数据失败:', error);
+                }
+            }
+
+            function renderBooks(books) {
+                const grid = document.getElementById('booksGrid');
+                grid.innerHTML = '';
+
+                books.forEach((book, index) => {
+                    if (book.isPlaceholder) {
+                        grid.innerHTML += createPlaceholderCard('book', index + 1);
+                    } else {
+                        grid.innerHTML += createBookCard(book);
+                    }
+                });
+            }
+
+            function renderGallery(artworks) {
+                const grid = document.getElementById('galleryGrid');
+                grid.innerHTML = '';
+
+                artworks.forEach((art, index) => {
+                    if (art.isPlaceholder) {
+                        grid.innerHTML += createPlaceholderCard('art', index + 1);
+                    } else {
+                        grid.innerHTML += createGalleryCard(art);
+                    }
+                });
+            }
+
+            function createBookCard(book) {
+                return `
+                    <div class="waterfall-item" onclick="openBook('${book.id}')">
+                        <img src="${book.cover}" class="item-image" alt="${book.title}">
+                        <h3 class="item-title">${book.title}</h3>
+                        <p class="item-date">${book.date}</p>
+                    </div>
+                `;
+            }
+
+            function createGalleryCard(art) {
+                return `
+                    <div class="waterfall-item" onclick="openLightbox('${art.image}', '${escapeHtml(art.title)}', '${escapeHtml(art.author)}', '${escapeHtml(art.description)}')">
+                        <img src="${art.image}" class="item-image" alt="${art.title}">
+                        <h3 class="item-title">${art.title}</h3>
+                        <p class="item-author">${art.author}</p>
+                        <p class="item-desc">${art.description}</p>
+                    </div>
+                `;
+            }
+
+            function createPlaceholderCard(type, num) {
+                const icon = type === 'book' ? '📖' : '🎨';
+                const title = type === 'book' ? '待添加书籍' : '待添加画作';
+                const desc = type === 'book' 
+                    ? '1. 上传封面图片到 works/ 文件夹<br>2. 修改 books.json 添加书籍信息'
+                    : '1. 上传画作图片到 works/ 文件夹<br>2. 修改 gallery.json 添加画作信息';
+
+                return `
+                    <div class="waterfall-item placeholder-item">
+                        <div class="placeholder-icon">${icon}</div>
+                        <h3 class="item-title" style="color:#999">${title} #${num}</h3>
+                        <div class="placeholder-text">${desc}</div>
+                    </div>
+                `;
+            }
+
+            function openBook(bookId) {
+                window.location.href = `reader.html?id=${bookId}`;
+            }
+
+            function openLightbox(image, title, author, desc) {
+                const lightbox = document.getElementById('lightbox');
+                const img = document.getElementById('lightboxImage');
+                const titleEl = document.getElementById('lightboxTitle');
+                const authorEl = document.getElementById('lightboxAuthor');
+                const descEl = document.getElementById('lightboxDesc');
+
+                img.src = image;
+                titleEl.textContent = title;
+                authorEl.textContent = `作者：${author}`;
+                descEl.textContent = desc;
+
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeLightbox(event) {
+                if (!event || event.target === document.getElementById('lightbox')) {
+                    const lightbox = document.getElementById('lightbox');
+                    lightbox.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                });
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closeLightbox(null);
+                }
+            });
+
+            loadBooks();
+            loadGallery();
+        })();
+    </script>
+</body>
+
+</html>
