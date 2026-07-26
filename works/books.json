@@ -8,33 +8,33 @@
     },
     {
         "id": "placeholder-2",
-        "title": "待添加书籍 #2",
-        "date": "",
-        "cover": "",
+        "title": "尚未记载的故事",
+        "date": "***.***",
+        "cover": "NA work.jpg",
         "file": "",
         "isPlaceholder": true
     },
     {
         "id": "placeholder-3",
-        "title": "待添加书籍 #3",
-        "date": "",
-        "cover": "",
+        "title": "尚未记载的故事",
+        "date": "***.***",
+        "cover": "NA work.jpg",
         "file": "",
         "isPlaceholder": true
     },
     {
         "id": "placeholder-4",
-        "title": "待添加书籍 #4",
-        "date": "",
-        "cover": "",
+        "title": "尚未记载的故事",
+        "date": "***.***",
+        "cover": "NA work.jpg",
         "file": "",
         "isPlaceholder": true
     },
     {
         "id": "placeholder-5",
-        "title": "待添加书籍 #5",
-        "date": "",
-        "cover": "",
+        "title": "尚未记载的故事",
+        "date": "***.***",
+        "cover": "NA work.jpg",
         "file": "",
         "isPlaceholder": true
     }
