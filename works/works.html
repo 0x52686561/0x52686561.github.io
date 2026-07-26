@@ -30,7 +30,12 @@
         body::before {
             content: '';
             position: fixed;
-            inset: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 0;
+            bottom: 0;
+            width: 1200px;
+            max-width: calc(100% - 48px);
             background: rgba(255, 255, 250, 0.7);
             pointer-events: none;
             z-index: 0;
@@ -150,16 +155,21 @@
         .waterfall-item {
             break-inside: avoid;
             margin-bottom: 24px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 12px;
-            border: 1px solid #333;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .waterfall-item:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
         }
 
         .item-image {
@@ -170,19 +180,29 @@
             border: 1px solid #ddd;
         }
 
+        .item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-top: 8px;
+            gap: 12px;
+        }
+
         .item-title {
-            font-size: 16px;
+            font-size: 20px;
             letter-spacing: 2px;
             color: #111;
-            margin: 0 0 4px;
+            margin: 0;
             font-weight: bold;
+            flex-shrink: 0;
         }
 
         .item-date {
-            font-size: 12px;
+            font-size: 16px;
             letter-spacing: 1px;
             color: #666;
             margin: 0;
+            white-space: nowrap;
         }
 
         .item-author {
@@ -342,8 +362,8 @@
         </header>
 
         <div class="tab-container">
-            <button class="tab-btn active" data-tab="books">圣典</button>
-            <button class="tab-btn" data-tab="gallery">手稿</button>
+            <button class="tab-btn active" data-tab="books">圣言录</button>
+            <button class="tab-btn" data-tab="gallery">圣像卷</button>
         </div>
 
         <div id="books" class="tab-content active">
@@ -399,11 +419,7 @@
                 grid.innerHTML = '';
 
                 books.forEach((book, index) => {
-                    if (book.isPlaceholder) {
-                        grid.innerHTML += createPlaceholderCard('book', index + 1);
-                    } else {
-                        grid.innerHTML += createBookCard(book);
-                    }
+                    grid.innerHTML += createBookCard(book, index);
                 });
             }
 
@@ -412,27 +428,28 @@
                 grid.innerHTML = '';
 
                 artworks.forEach((art, index) => {
-                    if (art.isPlaceholder) {
-                        grid.innerHTML += createPlaceholderCard('art', index + 1);
-                    } else {
-                        grid.innerHTML += createGalleryCard(art);
-                    }
+                    grid.innerHTML += createGalleryCard(art, index);
                 });
             }
 
-            function createBookCard(book) {
+            function createBookCard(book, index) {
+                const hasFile = book.file && book.file.trim() !== '';
+                const onclick = hasFile ? `onclick="openBook('${book.id}')"` : '';
+                const cursor = hasFile ? '' : 'style="cursor: default"';
                 return `
-                    <div class="waterfall-item" onclick="openBook('${book.id}')">
+                    <div class="waterfall-item" ${onclick} ${cursor} data-index="${index}">
                         <img src="${book.cover}" class="item-image" alt="${book.title}">
-                        <h3 class="item-title">${book.title}</h3>
-                        <p class="item-date">${book.date}</p>
+                        <div class="item-meta">
+                            <h3 class="item-title">${book.title}</h3>
+                            <p class="item-date">${book.date}</p>
+                        </div>
                     </div>
                 `;
             }
 
-            function createGalleryCard(art) {
+            function createGalleryCard(art, index) {
                 return `
-                    <div class="waterfall-item" onclick="openLightbox('${art.image}', '${escapeHtml(art.title)}', '${escapeHtml(art.author)}', '${escapeHtml(art.description)}')">
+                    <div class="waterfall-item" data-index="${index}" onclick="openLightbox('${art.image}', '${escapeHtml(art.title)}', '${escapeHtml(art.author)}', '${escapeHtml(art.description)}')">
                         <img src="${art.image}" class="item-image" alt="${art.title}">
                         <h3 class="item-title">${art.title}</h3>
                         <p class="item-author">${art.author}</p>
@@ -491,13 +508,35 @@
                 return div.innerHTML;
             }
 
+            function playFadeInAnimation(tabId) {
+                const targetTab = document.getElementById(tabId);
+                if (!targetTab) return;
+
+                const items = targetTab.querySelectorAll('.waterfall-item');
+                items.forEach((item) => {
+                    item.style.animation = 'none';
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(30px)';
+                });
+
+                setTimeout(() => {
+                    items.forEach((item, index) => {
+                        item.style.animation = 'fadeInUp 0.6s ease forwards';
+                        item.style.animationDelay = index * 0.15 + 's';
+                    });
+                }, 50);
+            }
+
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.addEventListener('click', function () {
                     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                     
                     this.classList.add('active');
-                    document.getElementById(this.dataset.tab).classList.add('active');
+                    const targetTab = document.getElementById(this.dataset.tab);
+                    targetTab.classList.add('active');
+
+                    playFadeInAnimation(this.dataset.tab);
                 });
             });
 
@@ -507,7 +546,7 @@
                 }
             });
 
-            loadBooks();
+            loadBooks().then(() => playFadeInAnimation('books'));
             loadGallery();
         })();
     </script>
