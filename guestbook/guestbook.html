@@ -101,7 +101,7 @@
             object-fit: contain;
             pointer-events: none;
             opacity: 1;
-            right: 10px;
+            right: -120px;
             z-index: 10;
         }
 
@@ -123,7 +123,7 @@
         }
 
         .page-header .subtitle {
-            font-size: 16px;
+            font-size: 13px;
             letter-spacing: 4px;
             color: #9a6b2f;
         }
@@ -202,8 +202,8 @@
         }
 
         .composer-hint {
-            font-size: 14px;
-            color: #9a6b2f;
+            font-size: 12px;
+            color: #999;
             letter-spacing: 1px;
         }
 
@@ -278,30 +278,23 @@
             display: none;
         }
 
-        /* 单条留言卡片：九宫格边框 + 大角落装饰
-           边框宽度20px保持卡片紧凑，切片219 236保持源图角落细节 */
+        /* 单条留言卡片：bg2.jpg平铺底色 + corner.png角落装饰 + 古铜色细边框 */
         .comment-card {
             position: relative;
             min-height: 100px;
             padding: 16px 20px;
-            background-color: rgba(255, 250, 240, 0.95);
-               background-image:
-                   linear-gradient(rgba(255,250,240,0.82), rgba(255,250,240,0.82)),
-                   url('bg2.jpg');
-               background-repeat: repeat, repeat;
-               background-size: auto, 260px auto;
+            background-image: url('bg2.jpg');
+            background-size: auto;
+            background-repeat: repeat;
+            background-position: center;
 
-            border-style: solid;
-            border-width: 20px;
-
-            border-image-source: url('comment-bg.jpg');
-            border-image-slice: 219 236;
-            border-image-width: 20px;
-            border-image-repeat: round;
-            border-image-outset: 0;
+            border: 1px solid #9a6b2f;
+            border-radius: 4px;
         }
 
-        /* 左下角角落装饰：corner.png 垂直翻转 */
+        /* 左下角角落装饰：corner.png 垂直翻转
+           注意：scaleY(-1)会把背景上下颠倒，所以background-position用top left，
+           翻转后图片会落在元素底部，正好贴着卡片左下角外边框 */
         .comment-card::before {
             content: '';
             position: absolute;
@@ -312,7 +305,7 @@
             background-image: url('corner.png');
             background-size: contain;
             background-repeat: no-repeat;
-            background-position: bottom left;
+            background-position: top left;
             transform: scaleY(-1);
             pointer-events: none;
             z-index: 2;
@@ -522,7 +515,7 @@
         }
 
         .utterances-hint {
-            font-size: 14px;
+            font-size: 12px;
             color: #9a6b2f;
             letter-spacing: 2px;
             margin: 0 0 16px;
@@ -797,19 +790,13 @@
             .back-home {
                 top: 14px;
                 left: 14px;
-                font-size: 16px;
+                font-size: 12px;
             }
             .composer {
                 padding: 12px;
                 top: 10px;
             }
-            /* 移动端：九宫格边框缩小到10px */
-            .comment-card {
-                border-width: 10px;
-                border-image-width: 10px;
-                padding: 12px 14px;
-            }
-            /* 移动端角落装饰缩小 */
+            /* 移动端：卡片角落装饰缩小 */
             .comment-card::before,
             .comment-card::after {
                 width: 80px;
@@ -817,7 +804,7 @@
             }
             /* 移动端纯洁印记位置和大小调整 */
             .card-seal {
-                right: 6px;
+                right: -60px;
                 max-width: 56px;
                 max-height: 56px;
             }
