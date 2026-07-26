@@ -1,0 +1,41 @@
+[
+    {
+        "id": "sub-rosa",
+        "title": "Sub Rosa - In Lumine",
+        "date": "M41.998",
+        "cover": "Sub Rosa - In Lumine.jpg",
+        "file": "Sub Rosa - In Lumine.pdf"
+    },
+    {
+        "id": "placeholder-2",
+        "title": "待添加书籍 #2",
+        "date": "",
+        "cover": "",
+        "file": "",
+        "isPlaceholder": true
+    },
+    {
+        "id": "placeholder-3",
+        "title": "待添加书籍 #3",
+        "date": "",
+        "cover": "",
+        "file": "",
+        "isPlaceholder": true
+    },
+    {
+        "id": "placeholder-4",
+        "title": "待添加书籍 #4",
+        "date": "",
+        "cover": "",
+        "file": "",
+        "isPlaceholder": true
+    },
+    {
+        "id": "placeholder-5",
+        "title": "待添加书籍 #5",
+        "date": "",
+        "cover": "",
+        "file": "",
+        "isPlaceholder": true
+    }
+]

@@ -1,0 +1,42 @@
+[
+    {
+        "id": "placeholder-1",
+        "title": "待添加画作 #1",
+        "author": "",
+        "description": "",
+        "image": "",
+        "isPlaceholder": true
+    },
+    {
+        "id": "placeholder-2",
+        "title": "待添加画作 #2",
+        "author": "",
+        "description": "",
+        "image": "",
+        "isPlaceholder": true
+    },
+    {
+        "id": "placeholder-3",
+        "title": "待添加画作 #3",
+        "author": "",
+        "description": "",
+        "image": "",
+        "isPlaceholder": true
+    },
+    {
+        "id": "placeholder-4",
+        "title": "待添加画作 #4",
+        "author": "",
+        "description": "",
+        "image": "",
+        "isPlaceholder": true
+    },
+    {
+        "id": "placeholder-5",
+        "title": "待添加画作 #5",
+        "author": "",
+        "description": "",
+        "image": "",
+        "isPlaceholder": true
+    }
+]
